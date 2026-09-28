@@ -13,13 +13,13 @@ class proj1 {
 
         int totalRight = 0; int totalWrong = 0; int totalTestsTaken = 0;
         String sentinel = "";
-        while (!sentinel.trim().equalsIgnoreCase("no") || !sentinel.trim().equalsIgnoreCase("n")) {
+        while (!sentinel.trim().equalsIgnoreCase("no") && !sentinel.trim().equalsIgnoreCase("n")) {
             Integer results = topicChoice(globalScanner, possibleTopics);
-            if (results.equals(null) ) {
+            if (results != null) {
                 totalRight += results;
                 totalWrong += (5 - results);
                 totalTestsTaken++;
-            }
+            } else { break; }
             System.out.println("Would you like to play again"); sentinel = globalScanner.nextLine().trim();
         }
         System.out.println(String.format("Thank you for taking %d tests. Throughout taking these tests you got a total of %d questions right and %d wrong.", totalTestsTaken, totalRight, totalWrong));
@@ -33,12 +33,13 @@ class proj1 {
         while (determinedChoice <= 0 || determinedChoice > 4) {
             System.out.println("Choose from the following topics below, enter the corresponding number.\n1. RGB Questionnaire (great if you're into UI\n2. Pet Test\n3. Math Test\n4. Intro to Comp Sci Test\nEnter exit to exit");
             retrievedChoice = gs.nextLine().trim();
+            if (retrievedChoice.equalsIgnoreCase("exit")) { break; }
             try {
                 determinedChoice = Integer.parseInt(retrievedChoice);
                 
             } catch (Exception e) { 
                 if (!retrievedChoice.equalsIgnoreCase("exit")) { System.out.println("There was an incorrect input provided. Try again."); }
-                retrievedChoice = retrievedChoice.equalsIgnoreCase("exit") ? "exit" : "";
+                retrievedChoice =  "";
             }
         }
         return retrievedChoice.equalsIgnoreCase("exit") ? null : startSection(determinedChoice, possibleTopics, gs);
@@ -83,7 +84,7 @@ class proj1 {
 
         if (topicNumber == 1) {
             answers[0] = "A. 0, 0, 0";
-            answers[1] = "B. 0, 255, 0";
+            answers[1] = "B. 0, 255, 0"; 
             answers[2] = "C. 255, 0, 0";
             answers[3] = "D. 255, 255, 255";
             answers[4] = "E. 0, 0, 255";
@@ -111,17 +112,51 @@ class proj1 {
             return answers;
         }
     }
+    public static String[] questionAnswers(int topicNumber) {
+        String[] answers = new String[5];
+
+        if (topicNumber == 1) {
+            answers[0] = "c";
+            answers[1] = "b";
+            answers[2] = "e";
+            answers[3] = "a";
+            answers[4]= "d";
+            return answers;
+        } else if (topicNumber == 2) {
+            answers[0] = "a";
+            answers[1] = "b";
+            answers[2] = "c";
+            answers[3] = "d";
+            answers[4]= "e";
+            return answers;
+        } else if (topicNumber == 3) {
+            answers[0] = "b";
+            answers[1] = "a";
+            answers[2] = "d";
+            answers[3] = "c";
+            answers[4]= "e";
+            return answers;
+        } else {
+            answers[0] = "e";
+            answers[1] = "c";
+            answers[2] = "b";
+            answers[3] = "d";
+            answers[4]= "a";
+            return answers;
+        }
+    }
     public static Integer startSection(int returnValueFrom, String[] topics, Scanner gs) {
         String topic = topics[returnValueFrom - 1];
-        System.out.println(String.format("You are now going to be asked 5 questions for the %s.", topic));
+        System.out.println(String.format("You are now going to be asked 5 questions for the %s.\n", topic));
 
         int rightAnswers = 0; int wrongAnswers = 0;
         String[] questionsForTopic = questionDeterminator(returnValueFrom);
         String[] answersForTopic = answersDeterminator(returnValueFrom);
+        String[] correctChoices = questionAnswers(returnValueFrom);
         for (int pair = 0; pair < questionsForTopic.length; pair++) {
             System.out.println(questionsForTopic[pair]);
             for (String answerChoice : answersForTopic) { System.out.println(answerChoice); }
-            if (gs.nextLine().trim().substring(0,1).equalsIgnoreCase(answersForTopic[pair].substring(0, 1).toLowerCase())) { rightAnswers++; } else { wrongAnswers++;}
+            if (gs.nextLine().trim().substring(0,1).equalsIgnoreCase(correctChoices[pair])) { rightAnswers++; } else { wrongAnswers++;}
         }
         System.out.println(String.format("You got %d correct answers and %d wrong answers", rightAnswers, wrongAnswers));
         return rightAnswers;
