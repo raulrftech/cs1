@@ -83,7 +83,7 @@ class proj1 {
 
         if (topicNumber == 1) {
             answers[0] = "A. 0, 0, 0";
-            answers[1] = "B. 0, 355, 0";
+            answers[1] = "B. 0, 255, 0";
             answers[2] = "C. 255, 0, 0";
             answers[3] = "D. 255, 255, 255";
             answers[4] = "E. 0, 0, 255";
