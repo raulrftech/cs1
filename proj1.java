@@ -13,9 +13,13 @@ class proj1 {
 
         int totalRight = 0; int totalWrong = 0; int totalTestsTaken = 0;
         String sentinel = "";
-        while (!sentinel.trim().equalsIgnoreCase("no")) {
-            int[] results = topicChoice(globalScanner, possibleTopics);
-            if (results.length == 3 ) {  totalRight += results[0]; totalWrong += results[1]; totalTestsTaken += results[2]; }
+        while (!sentinel.trim().equalsIgnoreCase("no") || !sentinel.trim().equalsIgnoreCase("n")) {
+            Integer results = topicChoice(globalScanner, possibleTopics);
+            if (results.equals(null) ) {
+                totalRight += results;
+                totalWrong += (5 - results);
+                totalTestsTaken++;
+            }
             System.out.println("Would you like to play again"); sentinel = globalScanner.nextLine().trim();
         }
         System.out.println(String.format("Thank you for taking %d tests. Throughout taking these tests you got a total of %d questions right and %d wrong.", totalTestsTaken, totalRight, totalWrong));
@@ -23,35 +27,32 @@ class proj1 {
     }
 
     // Code Submission (worth 60%)
-    public static int[] topicChoice(Scanner gs, String[] possibleTopics) {
+    public static Integer topicChoice(Scanner gs, String[] possibleTopics) {
         String retrievedChoice = "";
         int determinedChoice = 0;
         while (determinedChoice <= 0 || determinedChoice > 4) {
             System.out.println("Choose from the following topics below, enter the corresponding number.\n1. RGB Questionnaire (great if you're into UI\n2. Pet Test\n3. Math Test\n4. Intro to Comp Sci Test\nEnter exit to exit");
             retrievedChoice = gs.nextLine().trim();
-            if (retrievedChoice.equalsIgnoreCase("exit")) {
-                break;
-            }
             try {
                 determinedChoice = Integer.parseInt(retrievedChoice);
                 
             } catch (Exception e) { 
-                if (!retrievedChoice.equalsIgnoreCase("exit")) { System.out.println(String.format("There was an incorrect input provided. Try again.", e.getLocalizedMessage())); }
+                if (!retrievedChoice.equalsIgnoreCase("exit")) { System.out.println("There was an incorrect input provided. Try again."); }
                 retrievedChoice = retrievedChoice.equalsIgnoreCase("exit") ? "exit" : "";
             }
         }
-        return retrievedChoice.equalsIgnoreCase("exit") ? new int[] {} : startSection(determinedChoice, possibleTopics, gs);
+        return retrievedChoice.equalsIgnoreCase("exit") ? null : startSection(determinedChoice, possibleTopics, gs);
         
     }
     public static String[] questionDeterminator(int topicNumber) {
         String[] questions = new String[5];
 
         if (topicNumber == 1) {
-            questions[0] = "What is the RGB(hex) for red?";
-            questions[1] = "What is the RGB(hex) for green?";
-            questions[2] = "What is the RGB(hex) for blue?";
-            questions[3] = "What is the RGB(hex) for white?";
-            questions[4] = "What is the RGB(hex) for black?";
+            questions[0] = "What is the RGB(hex to dec, csv) for red?";
+            questions[1] = "What is the RGB(hex to dec, csv) for green?";
+            questions[2] = "What is the RGB(hex to dec, csv) for blue?";
+            questions[3] = "What is the RGB(hex to dec, csv) for white?";
+            questions[4] = "What is the RGB(hex to dec, csv) for black?";
             return questions;
         } else if (topicNumber == 2) {
             questions[0] = "What household animal meows?";
@@ -62,7 +63,7 @@ class proj1 {
             return questions;
         } else if (topicNumber == 3) {
             questions[0] = "What is 2+2?";
-            questions[1] = "what is 3 sqaured?";
+            questions[1] = "what is 3 squared?";
             questions[2] = "What is the log of 100?";
             questions[3] = "What is the slope-intercept form?";
             questions[4] = "What is the derivative of 9x^3 + 34x^2 + 28? Do not include C in the answer."; // 18x^2 + 68x
@@ -81,48 +82,49 @@ class proj1 {
         String[] answers = new String[5];
 
         if (topicNumber == 1) {
-            answers[0] = "2550000";
-            answers[1] = "0025500";
-            answers[2] = "0000255";
-            answers[3] = "255255255";
-            answers[4] = "000000";
+            answers[0] = "A. 0, 0, 0";
+            answers[1] = "B. 0, 355, 0";
+            answers[2] = "C. 255, 0, 0";
+            answers[3] = "D. 255, 255, 255";
+            answers[4] = "E. 0, 0, 255";
             return answers;
         } else if (topicNumber == 2) {
-            answers[0] = "cat";
-            answers[1] = "dog";
-            answers[2] = "snake";
-            answers[3] = "rabbit";
-            answers[4] = "bird";
+            answers[0] = "A. Cat";
+            answers[1] = "B. Dog";
+            answers[2] = "C. Snake";
+            answers[3] = "D. Bunny";
+            answers[4] = "E. Bird";
             return answers;
         } else if (topicNumber == 3) {
-            answers[0] = "4";
-            answers[1] = "9";
-            answers[2] = "2";
-            answers[3] = "y=mx+b";
-            answers[4] = "18x^2+68x";
+            answers[0] = "A. 9";
+            answers[1] = "B. 4";
+            answers[2] = "C. y = mx + b";
+            answers[3] = "D. 2";
+            answers[4] = "E. 27x^2 + 68x";
             return answers;
         } else {
-            answers[0] = "arrays";
-            answers[1] = "no";
-            answers[2] = "depends";
-            answers[3] = "no";
-            answers[4] = "no";
+            answers[0] = "A. no, only if its a public top-level class";
+            answers[1] = "B. yes";
+            answers[2] = "C. no";
+            answers[3] = "D. no, main cannot me named something else.";
+            answers[4] = "E. arrays";
             return answers;
         }
     }
-    public static int[] startSection(int returnValueFrom, String[] topics, Scanner gs) {
+    public static Integer startSection(int returnValueFrom, String[] topics, Scanner gs) {
         String topic = topics[returnValueFrom - 1];
-        System.out.println(String.format("You are now going to be asked 5 questions for the %s", topic));
+        System.out.println(String.format("You are now going to be asked 5 questions for the %s.", topic));
 
         int rightAnswers = 0; int wrongAnswers = 0;
         String[] questionsForTopic = questionDeterminator(returnValueFrom);
         String[] answersForTopic = answersDeterminator(returnValueFrom);
         for (int pair = 0; pair < questionsForTopic.length; pair++) {
             System.out.println(questionsForTopic[pair]);
-            if (gs.nextLine().trim().equalsIgnoreCase(answersForTopic[pair])) { rightAnswers++; } else { wrongAnswers++;}
+            for (String answerChoice : answersForTopic) { System.out.println(answerChoice); }
+            if (gs.nextLine().trim().substring(0,1).equalsIgnoreCase(answersForTopic[pair].substring(0, 1).toLowerCase())) { rightAnswers++; } else { wrongAnswers++;}
         }
         System.out.println(String.format("You got %d correct answers and %d wrong answers", rightAnswers, wrongAnswers));
-        return new int[] { rightAnswers, wrongAnswers, 1};
+        return rightAnswers;
     }
     
 
