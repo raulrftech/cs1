@@ -1,0 +1,55 @@
+Session 1 - Oct 22 Evening
+    mkdir Name that creates a direct subolder in the current folder
+        since theyre the same type which is a folder, I can have an array of subfolders well arrayList but in order to get the name I can do HM of Folder that is sorted alphabetically and of type double which would be its size
+        this can be a static func but if so there needs to be a guard on the caller, make sure that the folder being made is using a param of the same folder that is calling it or just a regular class method
+    touch NAME SIZE_KB
+        same thing as above, this would be a class method of type folder
+    ls
+        for each on its array of folders and files if there are any standalone
+    ls -R
+        since this needs to be recursive Ill mark this to think about on monday (the 26th) since I really am brand new to recursion
+        however, if it didnt implement recursion i can do an if check while iterating if the folder contains any files then output if so which would call each folders method to display files
+    cd Name
+        around the same fucntionality of mkdirName
+        checks if the specified folder is in the directory
+        guard on spelling and suffix of Name such as "fileName.swift" which is a file and not a directory
+    cd ..
+        moves one folder prior
+            either can keep a stack of previous directories visited or propagate into the method call of which folder were coming from similar to ObsObj
+    cd /
+        moves to the root folder which like I said the use of a stack which would be a simple get O1 time too with arrayName[0]
+    pwd
+        simple getter on the current directory, returns string or sysoutprntlns the name of it
+    size
+        displays the total size of files in the current folder and all its descendants
+        this is where I wish Java had computing vars like Swift does, pretty self explanatory
+        reqs recursion once again, so thisll be visited again on Monday
+    size NAME
+        displays the size of a direct file or the recurisve total size of a direct subfolder
+        if its a total size of subfolder then itll call the size method of that folder so propgates responsibility to what its calling and what is being called simply returns
+        if its the size of a direct file, again guardsll be implemented such as case sensitivity
+    find Name
+        searches the current folder and all descendants for filess whose names match exactly. display each mathcin full path and the number of matches
+        Basic Structure of this command: find . -name "fileName.fileType"
+            the . tells the command to start looking inside your current folder
+            Use -iname after the period instead and this utilizes case insensitivity which I can implement on that personal twist area
+            utilizing a "*.fileType" is pretty self explanatory which returns all those that suffice the condition of the type of the file
+        Searcha  specific folder instead of the current directory
+            find /USers/usr/Docs -name "fileName.fileType"
+            again self explanatory
+        If you only want to see files and skip matching folder anmes, add -type f
+            find . -type f -name "fileName.fileType"
+            can implement some logic on that f such as f is for file, if I want folder I can do something like dir for directory
+    rm NAME
+        deletes a direct file or folder which will also delete its children
+        this type of logic is pretty second nature to me due to extensive implementation of this requirement in my Swift projects
+    disk
+        displays the simulated disk and its used and available space
+        this can display something like
+        Filesystem      Size  Used Avail Use% Mounted on
+        /dev/disk1s1s1  466G  120G  346G  26% /
+        there are several other functions to disk such as du for disk usage and its respective methods that can be implemented for that personal twist
+    help
+        displays the command usage info
+        theres a required interface for this in the pdf, just check back on it since each command is its respective class, returns or sysoutprntln a message
+        
