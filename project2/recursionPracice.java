@@ -1,7 +1,13 @@
+import java.util.Arrays;
 class recursionPracice {
     // This file is to introduce me to recursion, will span through the course of the weekend form 10/22 to 10/26
     public static void main(String[] args) {
-        show(3);
+        int[][] grid = {
+            {4, -2, 7},
+            {1, 9, 3},
+            {-5, 0, 6}
+        };
+        System.out.println(maxOf(grid, 0, 0));
     }
     
     // A revursive method solves a problem by calling itself on a smaller version of the same problem, until the problem is small enough to answer directly
@@ -64,5 +70,147 @@ class recursionPracice {
         
         // Next Step:
             // Draw the call stack at the moment show(0) is running. List every call that exists at that moment with its n and the line its paused on.
+                // whenever 0 is runnign it checks if n is zero and it is so it returns
+                // the calls that exist at that moment are with n=1,2,3 respectively, paused right before the sysoutprntnln statement that prints out Up n
+            // Refinements
+                // show(0) is on the stack too, as the top call. At that moment there are 4 calss, show3 at the bottom to show0 at the top.
+                    // The top call is the newest and it finishes first
+                // Each of the three paused calls is stopped on its recursive call line (show(n-1)) and it resumes at the next lin.
+    }
+
+    // Next step:
+        // Write recursion yourself instead of tracing
+        // Brief:
+            // Write a recursive void method printUp(int n) that prints 1 up to n, each on its own line, with exactly one println in the method
+            // Before any code, send the plan in a few sentences: base vase, recursive case and what order things happen in
+                // Base Case: if (n <= 1) { Sysoutprntln n}
+                // Recursive Case: printUp(n - 1)
+                // Order of Occurences:
+                    //  print statements are after recursive call so it prints current n, whenever recursive call is called it
+    public static void printUp(int n) { if (n < 1) { return; } printUp(n-1); System.out.println(n); }
+    // A call stack adds a new call only on top and removes a call only from the top. The call that is running right now is always the one on top.
+        // When it finishes, its removed and control goes back to the call directly beneath it
+    // if the method were swapped
+        // control would not return to the 0, whenever 0 finishes, control returns to the call beneath it which would be 1
+        // nothing is passed back either since the method is void, so no value and no original n travels up
+        // each call only ever had its own n
+        // when 1 gets control back it has no lines left after the recursive call so it just ends
+        // then each call prior it also end, thus the way back is silent since all the printing happened on the way down
+    // THe rule is:
+        // code before the recurisve call runs on the way down and code after it runs on the way back up
+            // THis is also why this method counted up and the swapped one counts down
+
+    // Exercise 1:
+        // Write a recursive method sumDigits(int n) that returns the sum of the digits of a non-negative integer, so sumDigits(1234) returns 10
+        // Before writing code; plan:
+            // Base case
+            // Recursive case
+            // How each moves toward the base case
+    public static int sumDigits(int n) {
+        // base case
+        if (n < 10) { return n; }
+        // recursive case
+        return (n % 10) + sumDigits(n / 10);
+    }
+    // Each call handles one small peice and it trusts the recursive call to handle everything else correctly
+    // You do not trace the whole chain while writing it, you only decide how this calls piece combines with what comes back
+
+    // Exercise 2
+    // Write a recursive method isPalindrome(String s) that returns true if s reads the same forward and backward so racecar is true and abca is false
+    // Assume lowercase letters only, no loops and no reversing the string
+    // You may use length, charAt and substring
+    // Plan First:
+        // base cases
+        // recursive case
+        // how each call moves toward a base case
+        // inputs testing
+    public static boolean isPalindrome(String s) {
+        if (s == null || s.isEmpty() || s.length() < 2) { return true; }
+        if (s.charAt(0) == s.charAt(s.length() - 1)) { return isPalindrome(s.substring(s.length() - (s.length() - 1), s.length() - 1)); } else { return false; }
+        // When a method returns a value, that value takes the place of the call, right where the call was written
+        // In the sumDIgits, the call sat inside an addition so the value that came back was used in the sum
+        // The same thing happens with int x = Math.max(3, 4) which stores the 4
+            // If you write Math.max(3, 4); alone ona line, the 4 comes back and nothing uses it so Java throws it away
+            // It inst an error, a returned value is only kept if the call is used somewhere: returned, stored, tested or combined with something else
+        // The caller does not check what it originally returned
+                // A call hasnt returned anything until it runs a return instruction
+                // THe caller is not comparing true against false or converting anything
+                // It just runs its next instruction
+                // In the fixed version that instruction is ireturn whihc takes whatever is on top fo the operand stack and returns exactly that unchanged
+                // The value reaches the first call unchanged so a flase comes out as the same false
+        // THere was something on the operand stack
+            // In the first version of this, the false (the 0) did arrive on abca's operand stack, the next instruction was pop which removed it
+            // Only after that did the call continue with goto 59, iconst_1 and ireturn which is the original return true solo line
+            // So it wasnt nothing ot handle, the value was indeed there and the next instruction just threw it away since nothing handled it
+    }
+
+    // Exercise 3
+    // An array cannot be cut with substring so progress has to be tracked a different way
+        // Thats the idea of a seocnd piece of info that I wanted in my first printUp plan and this exercise needs it
+    // Write a recursive method countEven(int[] nums, int i) that returns how many even numbers are in nums from index i to the end
+    // countEven(nums, 0) counts the whole array.
+    // Do not use loops
+    // Plan First:
+        // Base Case
+        // Recursive cas
+        // How each call moves toward the base case and inputs to test
+    public static int countEven(int[] nums, int i) {
+        if (nums.length == 0 || nums.length <= i) { return 0; }
+        if (nums[i] % 2 == 0) {return (i - (i - 1)) + countEven(nums, ++i); } else { return countEven(nums, ++i);}
+        // Information goes down in the arguments: nums and the next i tell the next call where to look
+        // Information comes back up in the return value: the coutn so far
+        // The operand stack is how the JVM moves both and the off case isnt nothing, that call adds 0 of its own but it still returns whatever came back from below
+    }
+
+    // Exercise 4
+    // Progress now comes from halving a window defined by two indexes, instead of moving one step.
+    // Write a recursive method contains(int[] sorted, int target, int lo, int hi) that returns true if target appears in sorted between index lo and hi, inclusive
+    // The array is sorted ascending and contains(nums, t, 0, nums.length -1) searches the whole array
+    // No loops and each call must discard half of the remaining window rather than scanning one element at a time
+    // Plan First:
+        // Base Case or Cases
+            // this would be if lo == target or hi == target or if target < lo and lo is currently at index 0 and also checking if mid is target as well
+        // Recursive Cases
+            // these are going to be moving towards lo or towards high
+        // How the window shrinks each call and why it always ends
+            // a cut will either be towards one greater than mid or one lesser than mid
+                // high would become mid - 1 if target is lesser than mid and lo would become mid + 1 if mid is greater
+            // this always ends because it either cuts towards the left and right such as cutting to left would cut whole array into 0.5, to the right/left next would be 0.25, next 0.125 etc
+        // Inputs you would test
+            //
+    public static boolean contains(int[] sorted, int target, int low, int high) {
+        if ( high < low || sorted[low] > target || sorted[high] < target) { return false; }
+
+        int mid = (low + high) / 2; // low:0, high = 9 -> 9 / 2 = 4
+        if (sorted[low] == target || sorted[mid] == target || sorted[high] == target) { return true; }
+        
+        if (target < sorted[mid]) { return contains(sorted, target, low, mid - 1); } else { return contains(sorted, target, mid + 1, high); }
+        // After k halvings, n(0.5^k) elements remain and the search is done when that drops to about 1
+        // This gives k - log2(n), rounded up
+        // For the 205 indices array, log2 is 7.68 so 8 calls and for 1 million it would be 20 where basic iteration would need a max of size n.
+    }
+
+    // For every new recursive method, ask these before running anything
+        // What is the smallest input (empty, zero, one element) and does the method handle it?
+        // Does every call move toward a base case?
+        // Which inputs take different paths: found, absent, first, last?
+
+    // Exercise 5
+    // The progress now runs in two dimensions so the column wraps to the next row
+    // The base case also simply cannot return 0
+    // Write a recursive method maxOf(int[][] grid, int row, int col) that returns the largest value forom cell (row, col) to the end of the grid, reading left to right, row by row
+    // maxOf(grid, 0, 0) covers the whole grid
+    // Every row has the same length and the grid has at least one cell
+    // Do not use loops
+    // Plan First
+        // Base Case or Cases
+            // since this has to deal with size inputs they have to suffic the grids size
+        // Recursive Cases
+        // Inputs you would test
+    public static int maxOf(int[][] grid, int row, int col) {
+        if (row > grid.length || row < 0 || col < 0 || col > grid[row].length - 1) { return -1; }
+
+
+        return 0;
     }
 }
