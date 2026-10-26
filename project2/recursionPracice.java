@@ -2,12 +2,15 @@ import java.util.Arrays;
 class recursionPracice {
     // This file is to introduce me to recursion, will span through the course of the weekend form 10/22 to 10/26
     public static void main(String[] args) {
-        int[][] grid = {
-            {4, -2, 7},
-            {1, 9, 3},
-            {-5, 0, 6}
-        };
+        int[][] grid = {{-5, -3}, {-9, -4}};
         System.out.println(maxOf(grid, 0, 0));
+
+        int[] nums = {6, -2, 5, 4, -1, 3};
+        System.out.println(mystery(nums, 0));
+
+        int[] nums = {3, 34, 4, 12, 5, 2};
+        System.out.println(canMakeSum(nums, 0, 9));
+        System.out.println(canMakeSum(nums, 0, 30));
     }
     
     // A revursive method solves a problem by calling itself on a smaller version of the same problem, until the problem is small enough to answer directly
@@ -208,9 +211,93 @@ class recursionPracice {
         // Recursive Cases
         // Inputs you would test
     public static int maxOf(int[][] grid, int row, int col) {
-        if (row > grid.length || row < 0 || col < 0 || col > grid[row].length - 1) { return -1; }
+        if (row >= grid.length || row < 0 || col < 0 || col > grid[row].length - 1) { return Integer.MIN_VALUE; }
 
+        return Math.max(grid[row][col], maxOf(grid, (col + 1) > grid[row].length - 1  ? row + 1 : row, (col + 1) > grid[row].length - 1 ? 0 : col + 1));
+    }
 
-        return 0;
+    // Exercise 6 - Starting Traces
+    // Difficulty goes down from previous exercise, one array, one recursive call, no ternaries.
+    // The new part is that you trace it with nothing running. Here is the method's body
+    public static int mystery(int[] a, int i) {
+        if (i >= a.length) { return 0; }
+        if (a[i] < 0) { return mystery(a, i + 1); }
+        return a[i] - mystery(a, i + 1);
+    }
+    // Trace it and do three things:
+        // Using the array of {6, -2, 5, 4, -1, 3} and i=0
+        // Note the calls going down (i and a[i] for each)
+            // 6 > 0 so it returns 6 - mystery(a, 1) -> mystery(a, 2) -> 5 - mystery(a, 3) -> 4 - mystery(a, 4) -> mystery(a, 5) -> 3 - mystery(a, 6)
+        // The value each call returns on the way back up
+            // 6 - 5 - 4 - 3 - 0
+        // The final printed number
+            // 2
+    
+    // Exercise 7: cold trace, difficulty goes up slightly from previous exercise, the shape is the same, one array and one recursive call but this method prints before and after the call and keeps a local variable in each call
+    // Method body:
+    public static int mystery2(int[] a, int i) {
+        if (i >= a.length) { return 0; }
+        System.out.println("down " + a[i]);
+        int rest = mystery2(a, i + 1);
+        System.out.println("up " + a[i] + " rest " + rest);
+        return rest * 2 + a[i];
+    }
+    // Trace it and do the same things
+    // Using the array {3, 1, 4} and i=0
+    // Note the calls going down
+        // print donw 3
+        // rest = mystery(a, 1)
+            // print down 1
+            // rest = mystery(a, 2)
+                // print down 4
+                // rest = mystery(a, 3)
+                    // return 0
+                    // print up 4 rest 0
+                    // return 4
+                // print up 1 rest 4
+                // return 9
+            // print up 3 rest 9
+            // return 21
+    // The final printed number
+        // 21
+
+    // Exercise 8, difficulty going up from previous
+    // A value now travels both ways: acc is passed down as an argument and changes on the way and r comes back up as a return value
+    // Method body:
+    public static int mystery3(int[] a, int i, int acc) {
+        if (i >= a.length) { return acc; }
+        System.out.println("down " + i + " acc " + acc);
+        int r = mystery3(a, i + 1, acc + a[i]);
+        System.out.println("up " + i + " r " + r);
+        return r + a[i];
+    }
+    // Trace it and do the same things
+    // Using the array { 2, 5, 1} and i=0 and acc=0
+    // Note the calls going down
+        // print down 0 acc 0
+        // r = mystery(a, 1, 2)
+            // print down 1 acc 2
+            // r = mystery(a, 2, 7)
+                // print down 2 acc 7
+                // r = mystery(a, 3, 8)
+                // return 8
+            // print up 2 r 8
+            // return 8
+        // print up 1 r 9
+        // return 14
+        // print up 0 r 14
+        // return 14 + 2 = 16
+    // The final printed number
+        // 16
+
+    // Exercise 9, difficulty rises noticeably, this is a different shape from the single chain of calls so far
+    // Arrays only, no loops and nothing is modified
+    // Write canMakeSum(int[] nums, int i, int target)
+    // It returns true if some choice of elements from nums[i] to the end, each used at most once, adds up to target
+    // All elements are positive, target is at least 0 and a target of 0 counts as true
+    // canMakeSum(nums, 0, target) covers the whole array
+    public static boolean canMakeSum(int[] nums, int i, int target) {
+
+        return false;
     }
 }
