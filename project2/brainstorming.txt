@@ -53,3 +53,45 @@ Session 1 - Oct 22 Evening
         displays the command usage info
         theres a required interface for this in the pdf, just check back on it since each command is its respective class, returns or sysoutprntln a message
         
+Session 2 - Oct 26 Morning
+    There are various plans that I have thought about, only 2 will be in this "Braisntorming Session"
+    This program will utilize an account
+        Accounts have username, password, verification
+        Each will be setup at the very beginning of the program
+        Info will be retained within an FileSystemManager class or of similar name
+            This is because it is safe to assume that a person shall remember their username and password
+            Although a person will have their username visible within the execution of the program, it shall not be able to see its password without any verification
+            This class will contain features for resetting password, if the password is truly forgotten then the option to reset with a verification code will suffice
+                If the password is still known, verification is still required
+        For each operation that requires sudo such as
+            Remove File/Folder
+                Since the user is logged in, itll just require the verification code
+            Reset Password
+                If password is known, enforce password + verification
+                If password is forgotten, enforce verification, password reset, password confirmation
+            Rename File/Folder
+                Since the user is logged in, itll just require the verification code
+            Write to File
+                require password and verification code
+        Logout feature needs to be thought about, will have a clearer idea once basics are set up
+    Static containers such as files or folders, main FSM will also contain history of user actions
+
+Session 3 - Oct 26 Evenining
+    Since im creating an account feature that a user can log in and out of
+        Going to implement basic details such as name and username
+        User will have connection to the 2FA
+        2FA will be its own class with a user prop so its by user
+        Static container of hashmap meaning that user will have to utilize override of equals and hashcode
+        Since a user needs to have password and 2FA ill implement those first
+        The hierarchy should be something like
+            Since there are two main parts to this program of User and FSM(FileSystemManager)
+            User utilizes 2FA and Password, has an FSM prop to have connection to the FSM
+            FSM manages files and folders for each user and provides the "ui"
+        Since user needs to have a password and a 2FA
+            The password should not contain each of the users passwords
+                Its sole purpose is to help create and confirm
+            FSM should have lgoic so that the user can reset the password
+            2FAs sole purpose is to provide a 2FA code that can be given to the FSM and used to prompt user for the 2FA code in order to match it
+                This means that this can be an interface too
+    The user account will its obj will be created via the command line so it requires a scanner so the scanner needs to propagate to this
+    The FSM is going to have to utilize login logout methods so the FileHolder has to carry a boolean prop for isLoggedIn which is intialized to false

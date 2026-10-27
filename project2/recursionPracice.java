@@ -297,7 +297,7 @@ class recursionPracice {
     // All elements are positive, target is at least 0 and a target of 0 counts as true
     // canMakeSum(nums, 0, target) covers the whole array
     public static boolean canMakeSum(int[] nums, int i, int target) {
+        // will implement solution following acc setup in proj2
 
-        return false;
     }
 }
