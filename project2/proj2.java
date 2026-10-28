@@ -1,12 +1,18 @@
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
 public class proj2 {
     public static void main(String[] args) {
         Scanner globalScanner = new Scanner(System.in);
-        FileSystemManager fsm = new FileSystemManager("Foreman Technologies");
-        FileHolder fh = fsm.createFileHolder(globalScanner);
-        System.out.println(fh);
+        Random rand = new Random();
+
+        // FileSystemManager fsm = new FileSystemManager("Foreman Technologies");
+        // FileHolder fh = fsm.createFileHolder(globalScanner, rand);
+        // System.out.println(fh);
+        File testFIle = new File("miscle", null, ".txt");
+        System.out.println(testFIle.id);
     }
 }
 
@@ -28,8 +34,8 @@ interface Password {
 }
 
 interface TwoFactorAuthentication {
-    default String generate2FACode() {
-        Random rand = new Random();
+    default String generate2FACode(Random rand) {
+        
         StringBuilder code = new StringBuilder(8);
 
         int runningTotal = 0;
@@ -43,7 +49,7 @@ interface TwoFactorAuthentication {
         char thirdUpper = (char) (rand.nextInt(26) + 65); code.append(thirdUpper); runningTotal += (int) thirdUpper;
         char lastChar = (char) (rand.nextInt(10) + 48); code.append(lastChar); runningTotal += (int) lastChar;
 
-        return (runningTotal == 560) ? code.toString() : generate2FACode();
+        return (runningTotal == 560) ? code.toString() : generate2FACode(rand);
     }
     default boolean verified2FA(Scanner sc, String retrieved2FA, int attempts) {
         String verified = "";
@@ -67,7 +73,7 @@ class FileHolder implements Password, TwoFactorAuthentication {
         this.isLoggedIn = false;
         this.fsm = null;
     }
-    public static FileHolder createHolder(Scanner userInfo) {
+    public static FileHolder createHolder(Scanner userInfo, Random rand) {
         String name = "";
         String username = "";
 
@@ -94,7 +100,7 @@ class FileHolder implements Password, TwoFactorAuthentication {
             fh = null; return null; 
         }
 
-        String retrieved2FA = fh.generate2FACode();
+        String retrieved2FA = fh.generate2FACode(rand);
         System.out.println(String.format("You are going to receive a verification code, please enter it exactly as it appears.%n%s", retrieved2FA));
         if (!fh.verified2FA(userInfo, retrieved2FA, 4)) {
             System.out.println("You failed verifying the 2FA, you are going to have to start over.");
@@ -114,13 +120,85 @@ class FileHolder implements Password, TwoFactorAuthentication {
     }
 }
 
+class Folder extends ContainingType {
+    // TODO: contents container that holds files or folders
+    // TODO: id config
+    public Folder(String name, Folder parent) {
+        super(name, parent);
+    }
+}
+class File extends ContainingType {
+    String body; // TODO: implement history record
+    String type;
+    // TODO: id config
+    public File(String name, Folder parent, String type) {
+        super(name, parent);
+        this.body = "";
+        this.type = type;
+    }
+}
+
+abstract class UUID_Config {
+    static ArrayList<Integer> used_UUIDS = new ArrayList<>();
+
+    int getUUID() {
+        Random rand = new Random();
+        StringBuilder uuid_String = new StringBuilder(10);
+
+        // 1st Position
+        uuid_String.append(1); 
+        // 2nd and 3rd Position
+        int twoDigit = rand.nextInt(100);
+        if (twoDigit < 10) { uuid_String.append(0); uuid_String.append(twoDigit); } else { uuid_String.append(twoDigit); }
+        // 4th Position
+        uuid_String.append(0);
+        // 5th to 7th Position
+        int threeDigit = 1;
+        while (threeDigit % 7 != 0 || threeDigit == 0) { threeDigit = rand.nextInt(887); }
+        if (threeDigit < 10) {
+            uuid_String.append(0); uuid_String.append(0); uuid_String.append(threeDigit);
+        } else if (threeDigit < 100) {
+            uuid_String.append(0); uuid_String.append(threeDigit);
+        } else { uuid_String.append(threeDigit); }
+        // 8th Position
+        uuid_String.append(4);
+        // Last 2 Positions
+        int lastTwo = 1;
+        while (lastTwo % 8 != 0 || lastTwo == 0) { lastTwo = rand.nextInt(100); }
+        if (lastTwo < 10) { uuid_String.append(0); uuid_String.append(lastTwo); } else { uuid_String.append(lastTwo); }
+
+        int newUUID = Integer.parseInt(uuid_String.toString());
+        if (used_UUIDS.contains(newUUID)) { return getUUID(); } else { used_UUIDS.add(newUUID); return newUUID; }
+        // There is a maximum of 151,200 unique UUIDs
+    }
+}
+
+abstract class ContainingType extends UUID_Config {
+    String name; Folder parent; Double size; int id; Random rand;
+    public ContainingType(String name, Folder parent) { this.name = name; this.parent = parent; this.size = 0.00; this.id = getUUID(); }
+
+    // get size, recursion if folder, if file checks if body has anything, if not then 0, otherwise, strip then count with .length()
+    public int getSize(ContainingType self) {
+        if (self.getClass().getSimpleName() == "Folder") {
+            // needs files
+            // needs to recurse through its parents
+            return 0;
+        } else {
+            File casted = (File) self;
+            int[] accumulatedSize = {0};
+            Arrays.asList(casted.body.split(" ")).forEach((String s) -> accumulatedSize[0] += s.length());
+            return accumulatedSize[0];
+        }
+    }
+}
+
 class FileSystemManager implements TwoFactorAuthentication {
     String name;
     public FileSystemManager(String name) { this.name = name; }
 
-    public FileHolder createFileHolder(Scanner userCreator) {
+    public FileHolder createFileHolder(Scanner userCreator, Random rand) {
         // add to static hm of users
-        FileHolder newUser = FileHolder.createHolder(userCreator);
+        FileHolder newUser = FileHolder.createHolder(userCreator, rand);
         if (newUser != null) { newUser.fsm = this; }
         return newUser;
     }

@@ -95,3 +95,9 @@ Session 3 - Oct 26 Evenining
                 This means that this can be an interface too
     The user account will its obj will be created via the command line so it requires a scanner so the scanner needs to propagate to this
     The FSM is going to have to utilize login logout methods so the FileHolder has to carry a boolean prop for isLoggedIn which is intialized to false
+
+Session 4 - Oct 27 Evening
+    Going to implement the static hashmap container for the new users
+        This is going to be {key: FileHolder, Value: instances number of files }
+    Files and Folders Structure
+        
