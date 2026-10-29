@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -13,9 +14,12 @@ public class proj2 {
         // FileHolder fh = fsm.createFileHolder(globalScanner, rand);
         // System.out.println(fh);
         File testFIle = new File("Sample.java", null);
-        System.out.println(testFIle.id);
-        System.out.println(testFIle.getClass().getSimpleName());
-        System.out.println(testFIle.type);
+        Folder testFolder = new Folder("TestFolder", null);
+        System.out.println(testFolder.addToContents(testFIle));
+        File testFile2 = new File("Sample2.java", null);
+        System.out.println(testFolder.addToContents(testFile2));
+        testFolder.addToContents(new Folder("embedded", null));
+        testFolder.getContentsSummary();
     }
 }
 
@@ -124,38 +128,40 @@ class FileHolder implements Password, TwoFactorAuthentication {
 }
 
 interface Fix_FileName {
-    // TODO: Fix parameters to take the passed in chars to remove so that this method is reusable and code doesnt become redundant
     default String fixFileName(String name, int i) {
         if (i > name.length() - 1) { return ""; }
         String corrected = "";
-        return name.charAt(i) != '/' && name.charAt(i) != '\\' ? (corrected + name.charAt(i) + fixFileName(name, i + 1)) : fixFileName(name, i + 1);
+        return name.charAt(i) != '/' && name.charAt(i) != '\\' && name.charAt(i) != ' ' ? (corrected + name.charAt(i) + fixFileName(name, i + 1)) : fixFileName(name, i + 1);
     }
 }
 
 class Folder extends ContainingType implements Fix_FileName {
     TreeMap<Integer, ContainingType> contents = new TreeMap<>();
     private TreeMap<String, ContainingType> names = new TreeMap<>();
+    public void getContentsSummary() { contents.forEach((id, instance) -> System.out.println(String.format("ContainingType: %s%nID: %d%nName: %s%nParent: %s%n", instance.getClass().getSimpleName(), id, instance.name, instance.parent.name))); }
 
     public Folder(String name, Folder parent) {
         super(name, parent);
     }
 
-    public void addToContents(ContainingType appending) {
+    public boolean addToContents(ContainingType appending) {
         // this is case-sensitive already since different letters have different Unix values
-        if (names.containsKey(appending.name)) { return; }
         // chek for spaces, \ or / in name
-        appending.name = fixFileName(appending.name, 0);
+        String fixedName = fixFileName(appending.name, 0);
+        if (fixedName.isEmpty()) { return false; } else { appending.name = fixedName; }
+        if (names.containsKey(appending.name)) { return false; }
+        if (appending.name.charAt(0) == '.') { return false; }
         // . occurence; no more than 1, check if folder, if so, it cannot have a period
         int periodCounter = 0;
         for (char c: appending.name.toCharArray()) { if (c=='.') {
             periodCounter++;
-            if (appending.getClass().getSimpleName() == "Folder") { return; } else {
-                if (periodCounter > 1) { return; } else { continue; }
+            if (appending.getClass().getSimpleName() == "Folder") { return false; } else {
+                if (periodCounter > 1 ) { return false; } else { continue; }
             }
         }}
-        contents.putIfAbsent(appending.id, appending);
-        // TODO: if exists in another folder already, prompt to move
-        // TODO: since a file is not mandated to have a type maybe do some check to see if it has a body
+        names.put(appending.name, appending);
+        contents.putIfAbsent(appending.id, appending); appending.parent = this; return true;
+        // TODO: if exists in another folder already, prompt to move, refer to line 146-148 on brainstorming.txt
     }
 }
 class File extends ContainingType {

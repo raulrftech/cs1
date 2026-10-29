@@ -138,4 +138,12 @@ Session 5 - Oct 28 Morning
         If its a folder, a folder has contents which I would need to implement before fiinishing this method
             However, contents consist of files or folders, so we can call the .getSize() method of each thing within its contents
             Then recurse through its parents, but first check if its parent is not null since if it is that means its a root folder
-            
+        Implemented file name fixer, removes any slashes from the name
+        Period counter checks if its a folder if it has a period and returns if it is, thinking about stripping that
+            Fix parameters to take the passed in chars to remove so that this method is reusable and code doesnt become redundant
+
+Session 6 - Oct 29 Morning
+    On line 164, there is a TODO that currently says ( If something exists in another folder already, prompt to mvoe )
+        You can remember back whenever you had separate funcs that move certain things, take certain things out
+        Keep this in mind because you would call those two methods, such as moveTo would call deleteFrom in self and then call the destinations addToContents
+    Fixed the method as well so it covers empty strings and returns false if the fixed file or folder name is empty
