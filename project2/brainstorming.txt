@@ -100,4 +100,42 @@ Session 4 - Oct 27 Evening
     Going to implement the static hashmap container for the new users
         This is going to be {key: FileHolder, Value: instances number of files }
     Files and Folders Structure
-        
+        FILE
+            Name
+            Parent(folder)
+            Body
+            Type
+            Size
+            ID
+        Folder
+            Parent(if within another folder)
+            Contents(files or folders)
+            Name
+            Size
+                Use compareTo with treemap based on size of files
+            ID
+            Parent if any
+        Can use abs class for
+            Name
+            Parent(if file then folder, if folder then folder, both are folders)
+    Rules for UUID Configuration
+        Total of 10 digits
+        Position 1:       always 1
+        Position 2 & 3:   no rule
+        Positin 4: always 0
+        Position 5 to 7:  (middle 3 digits) less than 886 and divisible by 7
+        Position 8:       always 4
+        Positon 9 & 10:   (last 2 digits) divisble by 8
+
+Session 5 - Oct 28 Morning
+    Since UUID config has stored UUIDs of each instance created statically, either it be a folder of file, I can propagate this to FSM via an HM
+    Current fucntionality has to be propagate to FSM as well. No actions shall be called through a class itself but only through FSM
+    Going to start on the get size method first
+        Since the paramter is of type ContainingType which only can be either a file or folder
+            If its a file, I cast it to a File ph var such as File casted = (File) self; which is the parameters name
+            Then do int[] accumulatedSize = {0}; then do Arrays.asList(casted.body.split(" )).forEach((String s) -> accumulatedSize[0] += s.length())
+            Then return the accumulatedSize[0]; utilizing a split is purely a design choice so whitespace does not contribute to the size of a file
+        If its a folder, a folder has contents which I would need to implement before fiinishing this method
+            However, contents consist of files or folders, so we can call the .getSize() method of each thing within its contents
+            Then recurse through its parents, but first check if its parent is not null since if it is that means its a root folder
+            

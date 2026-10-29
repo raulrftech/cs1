@@ -8,9 +8,9 @@ class recursionPracice {
         int[] nums = {6, -2, 5, 4, -1, 3};
         System.out.println(mystery(nums, 0));
 
-        int[] nums = {3, 34, 4, 12, 5, 2};
+        int[] nums2 = {3, 34, 4, 12, 5, 2};
         System.out.println(canMakeSum(nums, 0, 9));
-        System.out.println(canMakeSum(nums, 0, 30));
+        System.out.println(keepEvens(nums2, 0));
     }
     
     // A revursive method solves a problem by calling itself on a smaller version of the same problem, until the problem is small enough to answer directly
@@ -298,6 +298,17 @@ class recursionPracice {
     // canMakeSum(nums, 0, target) covers the whole array
     public static boolean canMakeSum(int[] nums, int i, int target) {
         // will implement solution following acc setup in proj2
+        return true;
+    }
 
+    // Sample Exercise to implement into proj2.java standing in for the method fixFileName that is in the Fix_FileName interface
+    // write keepEvens(int[] nums, int i)
+    // It returns a string made from the even numbers in the array from index i to the end in order, with nothing between them
+    // Odd numbers are skipped adnd if there are no even numbers it returns an empty string
+    // Noo loops and nothing is modified
+    public static String keepEvens(int[] nums, int i) {
+        if (i > nums.length - 1) { return ""; }
+        String addTo = "";
+        return nums[i] % 2 == 0 ? (addTo + nums[i] + keepEvens(nums, i + 1)) : keepEvens(nums, i + 1);
     }
 }

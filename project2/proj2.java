@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 public class proj2 {
     public static void main(String[] args) {
@@ -11,8 +12,10 @@ public class proj2 {
         // FileSystemManager fsm = new FileSystemManager("Foreman Technologies");
         // FileHolder fh = fsm.createFileHolder(globalScanner, rand);
         // System.out.println(fh);
-        File testFIle = new File("miscle", null, ".txt");
+        File testFIle = new File("Sample.java", null);
         System.out.println(testFIle.id);
+        System.out.println(testFIle.getClass().getSimpleName());
+        System.out.println(testFIle.type);
     }
 }
 
@@ -120,21 +123,48 @@ class FileHolder implements Password, TwoFactorAuthentication {
     }
 }
 
-class Folder extends ContainingType {
-    // TODO: contents container that holds files or folders
-    // TODO: id config
+interface Fix_FileName {
+    // TODO: Fix parameters to take the passed in chars to remove so that this method is reusable and code doesnt become redundant
+    default String fixFileName(String name, int i) {
+        if (i > name.length() - 1) { return ""; }
+        String corrected = "";
+        return name.charAt(i) != '/' && name.charAt(i) != '\\' ? (corrected + name.charAt(i) + fixFileName(name, i + 1)) : fixFileName(name, i + 1);
+    }
+}
+
+class Folder extends ContainingType implements Fix_FileName {
+    TreeMap<Integer, ContainingType> contents = new TreeMap<>();
+    private TreeMap<String, ContainingType> names = new TreeMap<>();
+
     public Folder(String name, Folder parent) {
         super(name, parent);
+    }
+
+    public void addToContents(ContainingType appending) {
+        // this is case-sensitive already since different letters have different Unix values
+        if (names.containsKey(appending.name)) { return; }
+        // chek for spaces, \ or / in name
+        appending.name = fixFileName(appending.name, 0);
+        // . occurence; no more than 1, check if folder, if so, it cannot have a period
+        int periodCounter = 0;
+        for (char c: appending.name.toCharArray()) { if (c=='.') {
+            periodCounter++;
+            if (appending.getClass().getSimpleName() == "Folder") { return; } else {
+                if (periodCounter > 1) { return; } else { continue; }
+            }
+        }}
+        contents.putIfAbsent(appending.id, appending);
+        // TODO: if exists in another folder already, prompt to move
+        // TODO: since a file is not mandated to have a type maybe do some check to see if it has a body
     }
 }
 class File extends ContainingType {
     String body; // TODO: implement history record
     String type;
-    // TODO: id config
-    public File(String name, Folder parent, String type) {
+    public File(String name, Folder parent) {
         super(name, parent);
         this.body = "";
-        this.type = type;
+        this.type = name.substring(name.indexOf(".") >= 0 ? name.indexOf(".") + 1 : 0);
     }
 }
 
@@ -174,16 +204,17 @@ abstract class UUID_Config {
 }
 
 abstract class ContainingType extends UUID_Config {
-    String name; Folder parent; Double size; int id; Random rand;
+    String name; Folder parent; Double size; int id;
     public ContainingType(String name, Folder parent) { this.name = name; this.parent = parent; this.size = 0.00; this.id = getUUID(); }
 
     // get size, recursion if folder, if file checks if body has anything, if not then 0, otherwise, strip then count with .length()
     public int getSize(ContainingType self) {
         if (self.getClass().getSimpleName() == "Folder") {
-            // needs files
-            // needs to recurse through its parents
+            // needs files aka access to its Contents container
+
             return 0;
         } else {
+            // TODO: look at required implementation of Disk in proj desc
             File casted = (File) self;
             int[] accumulatedSize = {0};
             Arrays.asList(casted.body.split(" ")).forEach((String s) -> accumulatedSize[0] += s.length());
