@@ -146,4 +146,21 @@ Session 6 - Oct 29 Morning
     On line 164, there is a TODO that currently says ( If something exists in another folder already, prompt to mvoe )
         You can remember back whenever you had separate funcs that move certain things, take certain things out
         Keep this in mind because you would call those two methods, such as moveTo would call deleteFrom in self and then call the destinations addToContents
+        Also,, check the order of operations, suppose the destination already has an entry with the same name, so addToContetns returns fals
+            After that, what state is the obj in; is it still in its original folder, is it in the destination or is it in neither.
     Fixed the method as well so it covers empty strings and returns false if the fixed file or folder name is empty
+
+Session 7 - Oct 30 Afternoon
+    Finished the recrusive method for finding size of a file or folder. pretty self explanatory, not too much explaining is needed
+    Going to work on the methods (remove, delete, move file/folder) , remove is the same as delete so anyway. Therell be a bulleted list for these shortly
+        Remove and move
+            Moving something needs where it currently is, which is its parent property, and the destination folder it’s going to.
+            Unlike a linked list, no TreeMap traversal is needed. It’s simple conditional checks: whether the destination folder is there, and whether the folder given is valid.
+            Both methods (remove and move) call a remove step inside them.
+            The remove step uses the parent property to reach the parent’s contents TreeMap, and removes the pair.
+            The remove step can return a boolean.
+    FileSystemManager will have the command map and running the typed command, the current folder and root and the users and login, nothign about movign
+    The move which im currently working on will be its own class that checks the argument count, finds two objs from the names typed, and calls the move operation and reports success/failure
+    Lets say FOlder B and Folder D have a file of the same name and im tyring to move from FFOlder B to D
+        IF there is currently a file named the same thing in the destination and if so I can prompt the user
+            if they want to change the name and if so then change the name and if not then prompt the user to move it elsewhere or if not then just exit out of the command

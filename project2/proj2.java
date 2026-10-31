@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -10,16 +11,7 @@ public class proj2 {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
 
-        // FileSystemManager fsm = new FileSystemManager("Foreman Technologies");
-        // FileHolder fh = fsm.createFileHolder(globalScanner, rand);
-        // System.out.println(fh);
-        File testFIle = new File("Sample.java", null);
-        Folder testFolder = new Folder("TestFolder", null);
-        System.out.println(testFolder.addToContents(testFIle));
-        File testFile2 = new File("Sample2.java", null);
-        System.out.println(testFolder.addToContents(testFile2));
-        testFolder.addToContents(new Folder("embedded", null));
-        testFolder.getContentsSummary();
+        
     }
 }
 
@@ -138,7 +130,7 @@ interface Fix_FileName {
 class Folder extends ContainingType implements Fix_FileName {
     TreeMap<Integer, ContainingType> contents = new TreeMap<>();
     private TreeMap<String, ContainingType> names = new TreeMap<>();
-    public void getContentsSummary() { contents.forEach((id, instance) -> System.out.println(String.format("ContainingType: %s%nID: %d%nName: %s%nParent: %s%n", instance.getClass().getSimpleName(), id, instance.name, instance.parent.name))); }
+    public void getContentsSummary() { contents.forEach((id, instance) -> System.out.println(String.format("ContainingType: %s%nID: %d%nName: %s%nParent: %s%nSize: %d%n", instance.getClass().getSimpleName(), id, instance.name, instance.parent.name, instance.getSize(instance)))); }
 
     public Folder(String name, Folder parent) {
         super(name, parent);
@@ -215,19 +207,65 @@ abstract class ContainingType extends UUID_Config {
 
     // get size, recursion if folder, if file checks if body has anything, if not then 0, otherwise, strip then count with .length()
     public int getSize(ContainingType self) {
-        if (self.getClass().getSimpleName() == "Folder") {
-            // needs files aka access to its Contents container
+        int[] accumulatedSize = {0};
 
-            return 0;
+        if (self.getClass().getSimpleName() == "Folder") {
+            Folder casted = (Folder) self;
+            for (Map.Entry<Integer, ContainingType> pair: casted.contents.entrySet()) {
+                accumulatedSize[0] += getSize(pair.getValue());
+            }
         } else {
             // TODO: look at required implementation of Disk in proj desc
             File casted = (File) self;
-            int[] accumulatedSize = {0};
             Arrays.asList(casted.body.split(" ")).forEach((String s) -> accumulatedSize[0] += s.length());
-            return accumulatedSize[0];
         }
+        return accumulatedSize[0];
+    }
+
+
+}
+
+interface Command {
+    // returns a String, the text showing how to type the command
+    String usage();
+    // returns a String, short line saying what the command does
+    String description();
+    // returns boolean, whether that many arguments is valid for this command
+    boolean accepts(int argumentCount);
+    // does the work
+    void execute(String[] arguments);
+}
+
+class Move implements Command {
+    Scanner fsm_Scanner;
+    public Move(Scanner fsm_Scanner) { this.fsm_Scanner = fsm_Scanner; }
+
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override 
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override 
+    public void execute(String[] arguments) {
+        
+
     }
 }
+
 
 class FileSystemManager implements TwoFactorAuthentication {
     String name;
