@@ -169,7 +169,7 @@ class File extends ContainingType {
 abstract class UUID_Config {
     static ArrayList<Integer> used_UUIDS = new ArrayList<>();
 
-    int getUUID() {
+    int getUUID() { 
         Random rand = new Random();
         StringBuilder uuid_String = new StringBuilder(10);
 
@@ -236,7 +236,7 @@ interface Command {
     void execute(String[] arguments);
 }
 
-class Move implements Command {
+class Move implements Command extends SharedScanner {
     Scanner fsm_Scanner;
     public Move(Scanner fsm_Scanner) { this.fsm_Scanner = fsm_Scanner; }
 
@@ -264,6 +264,295 @@ class Move implements Command {
         
 
     }
+}
+
+class Touch implements Command {
+    // touch NAME SIZE_KB
+    private final FileSystemManager ownedBy;
+    public Touch(FileSystemManager ownedBy) { this.ownedBy = ownedBy; }
+
+    @Override 
+    public String usage() {
+
+        return null;
+    }
+
+    @Override 
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+
+    }
+}
+
+class List extends SharedScanner implements Command {
+    // ls, ls -R
+    Scanner fsm_Scanner;
+    public List(Scanner fsm_Scanner) { super(fsm_Scanner); }
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+
+    }
+}
+
+class CD extends SharedScanner implements Command{
+    // cd NAME, cd .. , cd /
+    public CD(Scanner fsm_Scanner) { super(fsm_Scanner); }
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+    }
+}
+
+class CurrentPath extends SharedScanner implements Command {
+    // pwd
+    public CurrentPath(Scanner fsm_Scanner) { super(fsm_Scanner); }
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+    }
+}
+
+class SizeCommand extends SharedScanner implements Command {
+    // size, size NAME
+    public SizeCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+    }
+}
+
+class FindCommand extends SharedScanner implements Command {
+    // find NAME
+    public FindCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+    }
+}
+
+class RemoveCommand extends SharedScanner implements Command {
+    // rm NAME
+    public RemoveCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+    }
+}
+
+class DiskCommand extends SharedScanner implements Command {
+    // disk
+    public DiskCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+    }
+}
+
+class HelpCommand extends SharedScanner implements Command {
+    // help
+    public HelpCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+    }
+}
+
+class ExitCommand extends SharedScanner implements Command {
+    // exit
+    public ExitCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+
+    @Override
+    public String usage() {
+
+        return null;
+    }
+
+    @Override
+    public String description() {
+
+        return null;
+    }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return true;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+
+    }
+}
+
+abstract class SharedScanner {
+    Scanner fsm_Scanner;
+    public SharedScanner(Scanner fsm_Scanner) { this.fsm_Scanner = fsm_Scanner; }
 }
 
 
