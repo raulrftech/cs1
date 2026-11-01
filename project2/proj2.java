@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
@@ -236,9 +237,9 @@ interface Command {
     void execute(String[] arguments);
 }
 
-class Move implements Command extends SharedScanner {
+class Move extends SharedScanner implements Command {
     Scanner fsm_Scanner;
-    public Move(Scanner fsm_Scanner) { this.fsm_Scanner = fsm_Scanner; }
+    public Move(Scanner fsm_Scanner) { super(fsm_Scanner); }
 
 
     @Override
@@ -552,13 +553,22 @@ class ExitCommand extends SharedScanner implements Command {
 
 abstract class SharedScanner {
     Scanner fsm_Scanner;
-    public SharedScanner(Scanner fsm_Scanner) { this.fsm_Scanner = fsm_Scanner; }
+
+    public SharedScanner(Scanner fsm_Scanner) {
+        this.fsm_Scanner = fsm_Scanner;
+    }
 }
 
 
 class FileSystemManager implements TwoFactorAuthentication {
     String name;
-    public FileSystemManager(String name) { this.name = name; }
+    HashMap<String, Command> commands = new HashMap<>();
+    private Folder currentDirectory;
+    public FileSystemManager(String name) {
+        this.name = name;
+        this.currentDirectory = new Folder("root", null);
+
+    }
 
     public FileHolder createFileHolder(Scanner userCreator, Random rand) {
         // add to static hm of users
@@ -567,6 +577,7 @@ class FileSystemManager implements TwoFactorAuthentication {
         return newUser;
     }
 
+    public Folder getCurrentDirectory() { return this.currentDirectory; }
 
     public void login() {
 

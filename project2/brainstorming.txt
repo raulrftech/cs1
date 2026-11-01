@@ -164,3 +164,17 @@ Session 7 - Oct 30 Afternoon
     Lets say FOlder B and Folder D have a file of the same name and im tyring to move from FFOlder B to D
         IF there is currently a file named the same thing in the destination and if so I can prompt the user
             if they want to change the name and if so then change the name and if not then prompt the user to move it elsewhere or if not then just exit out of the command
+
+Session 8 - Nov 1 Morning
+    So im working on the Touch class and connecting it to the FSM
+        So Touch needs a reference to the FSM and im doing so by a private prop called ownedBy
+            In order to access the currentDirectory by access I mean to know what the currentDirectory is
+                It would call ownedBy.currentDirectory
+        Why do we have to implement getters for a single field :(((((
+            But Touch calls that getter through ownedBy each time the execute of Touch runs so it always seees ots cirret folder
+    The accepts method doesnt count anything but receives the split typed line that is cunted then passed
+        Only answers true or flase if the number of args is correct for the command
+    since its basically a generic that can handle any command, so it takes the nextLine() from the scanner that would be the command so that's a string
+        split to separate into partitions, the first index of this would be the command, -> determines the command by looking up on the hashma
+            in order to take care of any case sensitive such as upper case I can do parts[0].toLowerCase() -> do the look up, after that do the conditional check with its own accepts 
+                -> call the execute
