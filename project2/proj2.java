@@ -244,14 +244,12 @@ class Move extends SharedScanner implements Command {
 
     @Override
     public String usage() {
-
-        return null;
+        return "Format your command in the following way: move containingType_name destinationName";
     }
 
     @Override 
     public String description() {
-
-        return null;
+        return "Moves a file or folder from a folder to another folder such as Folder/File A in Folder 12 move to Folder 15";
     }
 
     @Override
@@ -274,14 +272,12 @@ class Touch implements Command {
 
     @Override 
     public String usage() {
-
-        return null;
+        return "touch fileName.fileType";
     }
 
     @Override 
     public String description() {
-
-        return null;
+        return "Creates a file within the current directory, if a folder is trying to be created, utilize 'mkdir'";
     }
 
     @Override
@@ -303,15 +299,11 @@ class List extends SharedScanner implements Command {
     public List(Scanner fsm_Scanner) { super(fsm_Scanner); }
 
     @Override
-    public String usage() {
-
-        return null;
-    }
+    public String usage() { return "ls or ls -R"; }
 
     @Override
     public String description() {
-
-        return null;
+        return "ls: lists all files and subfolders within the current directory.\nls -R Same as ls and also goes into every subfolder at every depth. Each folder gets a heading with its path";
     }
 
     @Override
@@ -333,14 +325,12 @@ class CD extends SharedScanner implements Command{
 
     @Override
     public String usage() {
-
-        return null;
+        return "cd\ncd fileName\ncd /path";
     }
 
     @Override
     public String description() {
-
-        return null;
+        return "cd: return to root directory\ncd NAME: changes the current directory into a child directory of the current directory\ncd /path/: changes the directory into the given path";
     }
 
     @Override
@@ -361,14 +351,12 @@ class CurrentPath extends SharedScanner implements Command {
 
     @Override
     public String usage() {
-
-        return null;
+        return "pwd";
     }
 
     @Override
     public String description() {
-
-        return null;
+        return "Outputs the current directy path such as /root/users/user1/subLocation/folderName/";
     }
 
     @Override
@@ -389,14 +377,12 @@ class SizeCommand extends SharedScanner implements Command {
 
     @Override
     public String usage() {
-
-        return null;
+        return "size\nsize NAME";
     }
 
     @Override
     public String description() {
-
-        return null;
+        return "Outputs the size of the current directory if just supplied with 'size', if inputting 'size NAME' returns the size of the folder or file";
     }
 
     @Override
@@ -417,14 +403,12 @@ class FindCommand extends SharedScanner implements Command {
 
     @Override
     public String usage() {
-
-        return null;
+        return "find NAME, name can be a folder's name or a file's name";
     }
 
     @Override
     public String description() {
-
-        return null;
+        return "Finds the file or folder and returns the path";
     }
 
     @Override
@@ -445,14 +429,12 @@ class RemoveCommand extends SharedScanner implements Command {
 
     @Override
     public String usage() {
-
-        return null;
+        return "rm fileName or folderName";
     }
 
     @Override
     public String description() {
-
-        return null;
+        return "removes a file or folder, deleting a folder also deletes its descendants and reclaims their disk space";
     }
 
     @Override
@@ -473,14 +455,12 @@ class DiskCommand extends SharedScanner implements Command {
 
     @Override
     public String usage() {
-
-        return null;
+        return "disk, can be used at any level within the system";
     }
 
     @Override
     public String description() {
-
-        return null;
+        return "Displays the disk and its used vs available space";
     }
 
     @Override
@@ -502,18 +482,17 @@ class HelpCommand extends SharedScanner implements Command {
     @Override
     public String usage() {
 
-        return null;
+        return "help, can be used at any level within the system";
     }
 
     @Override
     public String description() {
-
-        return null;
+        return "Displays each command's usage and description";
     }
 
     @Override
     public boolean accepts(int argumentCount) {
-
+        
         return true;
     }
 
@@ -575,6 +554,11 @@ class FileSystemManager implements TwoFactorAuthentication {
         FileHolder newUser = FileHolder.createHolder(userCreator, rand);
         if (newUser != null) { newUser.fsm = this; }
         return newUser;
+    }
+
+    public void handleCommand(String userInput) {
+
+
     }
 
     public Folder getCurrentDirectory() { return this.currentDirectory; }
