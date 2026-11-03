@@ -355,9 +355,10 @@ class CD extends SharedScanner implements Command{
     }
 }
 
-class CurrentPath extends SharedScanner implements Command {
+class CurrentPath implements Command {
     // pwd
-    public CurrentPath(Scanner fsm_Scanner) { super(fsm_Scanner); }
+    private final FileSystemManager ownedBy;
+    public CurrentPath(FileSystemManager ownedBy) { this.ownedBy = ownedBy; }
 
     @Override
     public String usage() {
@@ -371,13 +372,12 @@ class CurrentPath extends SharedScanner implements Command {
 
     @Override
     public boolean accepts(int argumentCount) {
-
-        return true;
+        return argumentCount == 0;
     }
 
     @Override
     public void execute(String[] arguments) {
-
+        System.out.println(this.ownedBy.getCurrentDirectory().getPath());
     }
 }
 

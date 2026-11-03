@@ -178,3 +178,12 @@ Session 8 - Nov 1 Morning
         split to separate into partitions, the first index of this would be the command, -> determines the command by looking up on the hashma
             in order to take care of any case sensitive such as upper case I can do parts[0].toLowerCase() -> do the look up, after that do the conditional check with its own accepts 
                 -> call the execute
+
+Session 9 - Nov 3 Morning
+    Currently working on the pwd class along with the method on a folder to print its current path.
+    Since the user is always going to always be in either root or a child folder such level1 or leve2, the currentDirectory prop on FSM will contain this information
+    The pwd command does not change anything, its basically a getter of info. 
+    The plan consists of: { keep note that the assignments table row pwd is the reference for the argument count and the behavior }
+        What the class keeps in its private filed
+            This will also be a reference to the FSM so that whenever calling FSM.currentDirectory, it accesses it directly unlike a Object.willChange call in swift with ObsObj
+        What each of the four methods do
