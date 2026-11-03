@@ -12,7 +12,7 @@ public class proj2 {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
 
-        
+
     }
 }
 
@@ -155,6 +155,16 @@ class Folder extends ContainingType implements Fix_FileName {
         names.put(appending.name, appending);
         contents.putIfAbsent(appending.id, appending); appending.parent = this; return true;
         // TODO: if exists in another folder already, prompt to move, refer to line 146-148 on brainstorming.txt
+    }
+
+    public String getPath() {
+        StringBuilder pathBuilder = new StringBuilder();
+        Folder refTo = this;
+        while (refTo != null) {
+            pathBuilder.insert(0, String.format("%s", refTo.parent == null ? "/" : String.format("%s", refTo == this ? String.format("%s", refTo.name) : String.format("%s/", refTo.name))));
+            refTo = refTo.parent;
+        }
+        return pathBuilder.toString();
     }
 }
 class File extends ContainingType {
@@ -356,7 +366,7 @@ class CurrentPath extends SharedScanner implements Command {
 
     @Override
     public String description() {
-        return "Outputs the current directy path such as /root/users/user1/subLocation/folderName/";
+        return "Outputs the current directy path such as /users/user1/subLocation/folderName/";
     }
 
     @Override
