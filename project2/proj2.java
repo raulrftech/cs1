@@ -12,7 +12,61 @@ public class proj2 {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
 
+        Folder main = new Folder("main", null);
+        File notes = new File("notes.txt", main);
+        File todo = new File("todo.txt", main);
+        File data = new File("data.csv", main);
+        File readme = new File("readme.md", main);
+        Folder docs = new Folder("docs", main);
+        Folder images = new Folder("images", main);
+        Folder code = new Folder("code", main);
 
+        File report = new File("report.txt", docs);
+        File summary = new File("summary.txt", docs);
+        Folder drafts = new Folder("drafts", docs);
+
+        File captions = new File("captions.txt", images);
+        File credits = new File("credits.txt", images);
+        Folder thumbnails = new Folder("thumbnails", images);
+
+        File app = new File("app.java", code);
+        File util = new File("util.java", code);
+        Folder tests = new Folder("tests", code);
+
+        notes.body = "buy milk and eggs from the store then pick up the package at the post office before five and call the dentist to move the appointment to next week";
+        todo.body = "finish the disk class tomorrow morning then write the commands for ls and cd and test every command with the sample folders before the check in meeting";
+        data.body = "id name score 1 ana 90 2 ben 85 3 carla 77 4 dev 92 5 elena 88 6 felix 69 7 gina 95 8 hugo 81";
+        readme.body = "this is the main folder of the simulator and it holds three folders named docs images and code plus a few loose files used for testing";
+        report.body = "the report explains how the file system stores folders in a tree where every folder keeps its own map of names and each file keeps its text in a body";
+        summary.body = "in short a folder can hold files and other folders and the size of a folder is the total size of everything inside it";
+        captions.body = "a quiet street at sunrise with long shadows and a lone bicycle leaning against a blue wall near the corner of the old market";
+        credits.body = "photos by the class members and edited on a laptop with free tools during the long weekend before the project was due";
+        app.body = "start the program then read a line from the user and hand it to the file system manager until the user types exit";
+        util.body = "helper methods live here such as one that cleans a name and one that checks that a size is a whole number that is not negative";
+
+        main.addToContents(notes);
+        main.addToContents(todo);
+        main.addToContents(data);
+        main.addToContents(readme);
+        main.addToContents(docs);
+        main.addToContents(images);
+        main.addToContents(code);
+
+        docs.addToContents(report);
+        docs.addToContents(summary);
+        docs.addToContents(drafts);
+
+        images.addToContents(captions);
+        images.addToContents(credits);
+        images.addToContents(thumbnails);
+
+        code.addToContents(app);
+        code.addToContents(util);
+        code.addToContents(tests);
+
+        main.getContentsSummary(true, false);
+        System.out.println("----------------------------");
+        main.getContentsSummary(true, true);
     }
 }
 
@@ -131,7 +185,22 @@ interface Fix_FileName {
 class Folder extends ContainingType implements Fix_FileName {
     TreeMap<Integer, ContainingType> contents = new TreeMap<>();
     private TreeMap<String, ContainingType> names = new TreeMap<>();
-    public void getContentsSummary() { contents.forEach((id, instance) -> System.out.println(String.format("ContainingType: %s%nID: %d%nName: %s%nParent: %s%nSize: %d%n", instance.getClass().getSimpleName(), id, instance.name, instance.parent.name, instance.getSize(instance)))); }
+    public void getContentsSummary(boolean isLS,  boolean isR) { 
+        if (!isLS) {
+            contents.forEach((id, instance) -> System.out.println(String.format("ContainingType: %s%nID: %d%nName: %s%nParent: %s%nSize: %.2f%n", instance.getClass().getSimpleName(), id, instance.name, instance.parent.name, instance.getSize(instance)))); 
+        } else {
+            if (!isR) { contents.forEach((id, instance) -> System.out.println(String.format("%s(%.2f)", instance.name, instance.getSize(instance)))); } else {
+                // this needs to recurse each folder within
+                contents.forEach((id, instance) -> {
+                    if (instance.getClass().getSimpleName() == "Folder") {
+                        Folder casted = (Folder) instance;
+                        System.out.println(String.format("%s(%.2f)", casted.name, casted.getSize(casted)));
+                        casted.getContentsSummary(isLS, isR);
+                    } else { System.out.println(String.format("%s(%.2f)", instance.name, instance.getSize(instance))); }
+                });
+            }
+        }
+    }
 
     public Folder(String name, Folder parent) {
         super(name, parent);
@@ -217,8 +286,8 @@ abstract class ContainingType extends UUID_Config {
     public ContainingType(String name, Folder parent) { this.name = name; this.parent = parent; this.size = 0.00; this.id = getUUID(); }
 
     // get size, recursion if folder, if file checks if body has anything, if not then 0, otherwise, strip then count with .length()
-    public int getSize(ContainingType self) {
-        int[] accumulatedSize = {0};
+    public double getSize(ContainingType self) {
+        double[] accumulatedSize = {0.0};
 
         if (self.getClass().getSimpleName() == "Folder") {
             Folder casted = (Folder) self;
@@ -303,10 +372,34 @@ class Touch implements Command {
     }
 }
 
-class List extends SharedScanner implements Command {
+class MakeDirectory implements Command {
+    private final FileSystemManager ownedBy;
+    public MakeDirectory(FileSystemManager ownedBy) { this.ownedBy = ownedBy; }
+
+    @Override 
+    public String usage() { return "mkdir folderName"; }
+
+    @Override
+    public String description() { return "Creates a folder within the current directory."; }
+
+    @Override
+    public boolean accepts(int argumentCount) {
+
+        return argumentCount == 1;
+    }
+
+    @Override
+    public void execute(String[] arguments) {
+        ContainingType newInstance = new Folder(arguments[0], null);
+        // TODO: configure statement in case of invalid error being thrown
+        this.ownedBy.getCurrentDirectory().addToContents(newInstance);
+    }
+}
+
+class List implements Command {
     // ls, ls -R
-    Scanner fsm_Scanner;
-    public List(Scanner fsm_Scanner) { super(fsm_Scanner); }
+    private final FileSystemManager ownedBy;
+    public List(FileSystemManager ownedBy) { this.ownedBy = ownedBy; }
 
     @Override
     public String usage() { return "ls or ls -R"; }
@@ -319,13 +412,19 @@ class List extends SharedScanner implements Command {
     @Override
     public boolean accepts(int argumentCount) {
 
-        return true;
+        return argumentCount == 0 || argumentCount == 1;
     }
 
     @Override
     public void execute(String[] arguments) {
-
-
+        // this method does what it says above
+            // Lists all contents of the current subdirectory
+            // Much like pwd but goes over the hm
+                // Since the hm is {k: id, v: instance} we can print this
+        boolean isFull = arguments.length == 1;
+        if (isFull) { this.ownedBy.getCurrentDirectory().getContentsSummary(true, true); } else {
+            this.ownedBy.getCurrentDirectory().getContentsSummary(true, false);
+        }
     }
 }
 
@@ -567,8 +666,15 @@ class FileSystemManager implements TwoFactorAuthentication {
     }
 
     public void handleCommand(String userInput) {
-
-
+        String[] args = userInput.trim().split(" ");
+        String commandFrom = args[0];
+        Command command = commands.get(commandFrom);
+        if (command != null) {
+            String[] finalArgs = Arrays.copyOfRange(args, 1, args.length);
+            if (command.accepts(finalArgs.length)) { command.execute(finalArgs); } else {
+                return; // TODO: proper error handling
+            }
+        }
     }
 
     public Folder getCurrentDirectory() { return this.currentDirectory; }

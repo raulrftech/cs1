@@ -187,3 +187,22 @@ Session 9 - Nov 3 Morning
         What the class keeps in its private filed
             This will also be a reference to the FSM so that whenever calling FSM.currentDirectory, it accesses it directly unlike a Object.willChange call in swift with ObsObj
         What each of the four methods do
+
+Session 10 - Nov 4 Morning
+    The below lines will be plans for the Disk implementation
+    The available cells show an ID of 0 whereas the occupied cells show the ID of whichever file is taking up that particular amount of space
+    touching a file and then writing to it determines its size and each cell can hold 1KB
+    Removing a file reoccupies the cells that contained its respective ID with 0 once again
+    Creating a new file would consume whatever space is available from the very beginning array
+        The order of space alloted does not need to be contiguous
+    Creating a file that is bigger than the total amount of space of the disk or the total amoutn of space available gets rejected and so does one with 0
+        The condition that the file size of 0 gets rejected complicates with my implementation of creating a file first then writing to it
+            Files will therefore only be appended if there is any available size for said file
+                So this yields the condtional size that a file may have
+                    Not only the last available slot to be filled but to begin with
+        TODO: Write method. Runs whenever the user writes to a file and saves it. Works out the new size in KB, 
+            checks before changing anything that enough cells are free for the whole size, then allocates the cells in row order. 
+            If there aren't enough, the file and the disk stay unchanged.
+        TODO: Creation check. Runs in touch before the file is created. Requires at least one free cell, which limits 
+            the largest size a file can reach to the space available from the moment it is created.
+    
