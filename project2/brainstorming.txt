@@ -179,30 +179,15 @@ Session 8 - Nov 1 Morning
             in order to take care of any case sensitive such as upper case I can do parts[0].toLowerCase() -> do the look up, after that do the conditional check with its own accepts 
                 -> call the execute
 
-Session 9 - Nov 3 Morning
-    Currently working on the pwd class along with the method on a folder to print its current path.
-    Since the user is always going to always be in either root or a child folder such level1 or leve2, the currentDirectory prop on FSM will contain this information
-    The pwd command does not change anything, its basically a getter of info. 
-    The plan consists of: { keep note that the assignments table row pwd is the reference for the argument count and the behavior }
-        What the class keeps in its private filed
-            This will also be a reference to the FSM so that whenever calling FSM.currentDirectory, it accesses it directly unlike a Object.willChange call in swift with ObsObj
-        What each of the four methods do
+Session 9 Nov 2 Morning
+    TODO: exit command in its entirety; the system does have a login and logout feature
 
-Session 10 - Nov 4 Morning
-    The below lines will be plans for the Disk implementation
-    The available cells show an ID of 0 whereas the occupied cells show the ID of whichever file is taking up that particular amount of space
-    touching a file and then writing to it determines its size and each cell can hold 1KB
-    Removing a file reoccupies the cells that contained its respective ID with 0 once again
-    Creating a new file would consume whatever space is available from the very beginning array
-        The order of space alloted does not need to be contiguous
-    Creating a file that is bigger than the total amount of space of the disk or the total amoutn of space available gets rejected and so does one with 0
-        The condition that the file size of 0 gets rejected complicates with my implementation of creating a file first then writing to it
-            Files will therefore only be appended if there is any available size for said file
-                So this yields the condtional size that a file may have
-                    Not only the last available slot to be filled but to begin with
-        TODO: Write method. Runs whenever the user writes to a file and saves it. Works out the new size in KB, 
-            checks before changing anything that enough cells are free for the whole size, then allocates the cells in row order. 
-            If there aren't enough, the file and the disk stay unchanged.
-        TODO: Creation check. Runs in touch before the file is created. Requires at least one free cell, which limits 
-            the largest size a file can reach to the space available from the moment it is created.
-    
+Session 10 Nov 5 Evening
+    Redoing the getContentsSummary() method within the Folder class to work more like an await withTaskGrouåp from Swift without the asynchronicity
+        This would be the -R version of LS whenever its called, the current parameters of the above method is (boolean isLS, boolean isR)
+    In order to make it appear properly that means whenever the loop encounters a Folder instance it appends it to an AL or an HM
+        So that once the file names are outputted onto the screen, the bottom section would look something like l1: folderName l2: fileNames
+
+Session 11 Nov 6 Afternoon
+    Since the contents has all files and folders that directory has then that is the current root folder
+    Which means whenever in the case if keyed by k,v pairs, that v.parent would be == this in which case that can be used as a conditional

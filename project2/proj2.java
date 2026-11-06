@@ -11,60 +11,6 @@ public class proj2 {
     public static void main(String[] args) {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
-
-        Folder main = new Folder("main", null);
-        File notes = new File("notes.txt", main);
-        File todo = new File("todo.txt", main);
-        File data = new File("data.csv", main);
-        File readme = new File("readme.md", main);
-        Folder docs = new Folder("docs", main);
-        Folder images = new Folder("images", main);
-        Folder code = new Folder("code", main);
-
-        File report = new File("report.txt", docs);
-        File summary = new File("summary.txt", docs);
-        Folder drafts = new Folder("drafts", docs);
-
-        File captions = new File("captions.txt", images);
-        File credits = new File("credits.txt", images);
-        Folder thumbnails = new Folder("thumbnails", images);
-
-        File app = new File("app.java", code);
-        File util = new File("util.java", code);
-        Folder tests = new Folder("tests", code);
-
-        notes.body = "buy milk and eggs from the store then pick up the package at the post office before five and call the dentist to move the appointment to next week";
-        todo.body = "finish the disk class tomorrow morning then write the commands for ls and cd and test every command with the sample folders before the check in meeting";
-        data.body = "id name score 1 ana 90 2 ben 85 3 carla 77 4 dev 92 5 elena 88 6 felix 69 7 gina 95 8 hugo 81";
-        readme.body = "this is the main folder of the simulator and it holds three folders named docs images and code plus a few loose files used for testing";
-        report.body = "the report explains how the file system stores folders in a tree where every folder keeps its own map of names and each file keeps its text in a body";
-        summary.body = "in short a folder can hold files and other folders and the size of a folder is the total size of everything inside it";
-        captions.body = "a quiet street at sunrise with long shadows and a lone bicycle leaning against a blue wall near the corner of the old market";
-        credits.body = "photos by the class members and edited on a laptop with free tools during the long weekend before the project was due";
-        app.body = "start the program then read a line from the user and hand it to the file system manager until the user types exit";
-        util.body = "helper methods live here such as one that cleans a name and one that checks that a size is a whole number that is not negative";
-
-        main.addToContents(notes);
-        main.addToContents(todo);
-        main.addToContents(data);
-        main.addToContents(readme);
-        main.addToContents(docs);
-        main.addToContents(images);
-        main.addToContents(code);
-
-        docs.addToContents(report);
-        docs.addToContents(summary);
-        docs.addToContents(drafts);
-
-        images.addToContents(captions);
-        images.addToContents(credits);
-        images.addToContents(thumbnails);
-
-        code.addToContents(app);
-        code.addToContents(util);
-        code.addToContents(tests);
-
-        main.getContentsSummary(true, true);
     }
 }
 
@@ -183,32 +129,26 @@ interface Fix_FileName {
 class Folder extends ContainingType implements Fix_FileName {
     TreeMap<Integer, ContainingType> contents = new TreeMap<>();
     private TreeMap<String, ContainingType> names = new TreeMap<>();
-    public void getContentsSummary(boolean isLS,  boolean isR) {
-        HashMap<String, Folder> lsR_Folders = new HashMap<>();
 
-        /* TODO: ls -R: (1) give every folder, including the starting one,
-            a heading with its full path; (2) list each folder's subfolders as entries with sizes,
-            not only as later headings; (3) replace the getSimpleName() == "Folder" check, also in getSize and addToContents.
-        */
-        if (!isLS) {
-            contents.forEach((id, instance) -> System.out.println(String.format("ContainingType: %s%nID: %d%nName: %s%nParent: %s%nSize: %.2f%n", instance.getClass().getSimpleName(), id, instance.name, instance.parent.name, instance.getSize(instance)))); 
-        } else {
-            if (!isR) { contents.forEach((id, instance) -> System.out.println(String.format("%s(%.2f)", instance.name, instance.getSize(instance)))); } else {
-                // this needs to recurse each folder within
-                contents.forEach((id, instance) -> {
+    public void ls(boolean isR) {
+        HashMap<String, ArrayList<Folder>> lsR_Folders = new HashMap<>();
+        if (!isR) {
+            this.contents.forEach((id, instance) -> { System.out.println(String.format("%s(%.2fkb)", instance.name, instance.getSize(instance))); }); } else {
+                this.ls(false);
+
+                this.contents.forEach((id, instance) -> {
                     if (instance.getClass().getSimpleName() == "Folder") {
                         Folder casted = (Folder) instance;
-                        lsR_Folders.put(casted.name, casted);
-                    } else { System.out.println(String.format("%s(%.2f)", instance.name, instance.getSize(instance))); }
+                        lsR_Folders.computeIfAbsent(casted.getPath(), k -> new ArrayList<>()).add(casted);
+                    }
                 });
-                System.out.println();
-                // {k: directoryName, v: directoryInstance}
-                lsR_Folders.forEach((name, directory) -> {
-                    System.out.println(name);
-                    directory.getContentsSummary(true, true);
+
+                lsR_Folders.forEach((path, container) -> {
+                    System.out.println();
+                    System.out.println(path);
+                    container.forEach((obj) -> { obj.ls(true); });
                     System.out.println();
                 });
-            }
         }
     }
 
@@ -432,8 +372,8 @@ class List implements Command {
             // Much like pwd but goes over the hm
                 // Since the hm is {k: id, v: instance} we can print this
         boolean isFull = arguments.length == 1;
-        if (isFull) { this.ownedBy.getCurrentDirectory().getContentsSummary(true, true); } else {
-            this.ownedBy.getCurrentDirectory().getContentsSummary(true, false);
+        if (isFull) { this.ownedBy.getCurrentDirectory().ls(true); } else {
+            this.ownedBy.getCurrentDirectory().ls(false);
         }
     }
 }
