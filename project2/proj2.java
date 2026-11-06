@@ -64,8 +64,6 @@ public class proj2 {
         code.addToContents(util);
         code.addToContents(tests);
 
-        main.getContentsSummary(true, false);
-        System.out.println("----------------------------");
         main.getContentsSummary(true, true);
     }
 }
@@ -185,7 +183,13 @@ interface Fix_FileName {
 class Folder extends ContainingType implements Fix_FileName {
     TreeMap<Integer, ContainingType> contents = new TreeMap<>();
     private TreeMap<String, ContainingType> names = new TreeMap<>();
-    public void getContentsSummary(boolean isLS,  boolean isR) { 
+    public void getContentsSummary(boolean isLS,  boolean isR) {
+        HashMap<String, Folder> lsR_Folders = new HashMap<>();
+
+        /* TODO: ls -R: (1) give every folder, including the starting one,
+            a heading with its full path; (2) list each folder's subfolders as entries with sizes,
+            not only as later headings; (3) replace the getSimpleName() == "Folder" check, also in getSize and addToContents.
+        */
         if (!isLS) {
             contents.forEach((id, instance) -> System.out.println(String.format("ContainingType: %s%nID: %d%nName: %s%nParent: %s%nSize: %.2f%n", instance.getClass().getSimpleName(), id, instance.name, instance.parent.name, instance.getSize(instance)))); 
         } else {
@@ -194,9 +198,15 @@ class Folder extends ContainingType implements Fix_FileName {
                 contents.forEach((id, instance) -> {
                     if (instance.getClass().getSimpleName() == "Folder") {
                         Folder casted = (Folder) instance;
-                        System.out.println(String.format("%s(%.2f)", casted.name, casted.getSize(casted)));
-                        casted.getContentsSummary(isLS, isR);
+                        lsR_Folders.put(casted.name, casted);
                     } else { System.out.println(String.format("%s(%.2f)", instance.name, instance.getSize(instance))); }
+                });
+                System.out.println();
+                // {k: directoryName, v: directoryInstance}
+                lsR_Folders.forEach((name, directory) -> {
+                    System.out.println(name);
+                    directory.getContentsSummary(true, true);
+                    System.out.println();
                 });
             }
         }
