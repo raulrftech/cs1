@@ -11,6 +11,51 @@ public class proj2 {
     public static void main(String[] args) {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
+
+
+        Folder folderInstance = new Folder("holder", null);
+        File alpha = new File("alpha.txt", folderInstance);
+        File bravo = new File("bravo.txt", folderInstance);
+        File charlie = new File("charlie.txt", folderInstance);
+        File delta = new File("delta.txt", folderInstance);
+        File echo = new File("echo.txt", folderInstance);
+        File foxtrot = new File("foxtrot.txt", folderInstance);
+        File golf = new File("golf.txt", folderInstance);
+        File hotel = new File("hotel.txt", folderInstance);
+
+        folderInstance.addToContents(alpha);
+        folderInstance.addToContents(bravo);
+        folderInstance.addToContents(charlie);
+        folderInstance.addToContents(delta);
+        folderInstance.addToContents(echo);
+        folderInstance.addToContents(foxtrot);
+        folderInstance.addToContents(golf);
+        folderInstance.addToContents(hotel);
+
+        Folder level1 = new Folder("level1", null);
+        Folder level2 = new Folder("level2", level1);
+        Folder level3 = new Folder("level3", level2);
+        Folder level4 = new Folder("level4", level3);
+        Folder level5 = new Folder("level5", level4);
+        Folder level6 = new Folder("level6", level5);
+        Folder level7 = new Folder("level7", level6);
+        Folder level8 = new Folder("level8", level7);
+        Folder level9 = new Folder("level9", level8);
+        Folder level10 = new Folder("level10", level9);
+
+        level1.addToContents(level2);
+        level2.addToContents(level3);
+        level3.addToContents(level4);
+        level4.addToContents(level5);
+        level5.addToContents(level6);
+        level6.addToContents(level7);
+        level7.addToContents(level8);
+        level8.addToContents(level9);
+        level9.addToContents(level10);
+
+
+        System.out.println(level10.getPath());
+        System.out.println(folderInstance.getPath_File("foxtrot.txt"));
     }
 }
 
@@ -128,7 +173,7 @@ interface Fix_FileName {
 
 class Folder extends ContainingType implements Fix_FileName {
     TreeMap<Integer, ContainingType> contents = new TreeMap<>();
-    private TreeMap<String, ContainingType> names = new TreeMap<>();
+    public TreeMap<String, ContainingType> names = new TreeMap<>();
 
     public void ls(boolean isR) {
         HashMap<String, ArrayList<Folder>> lsR_Folders = new HashMap<>();
@@ -180,10 +225,31 @@ class Folder extends ContainingType implements Fix_FileName {
         StringBuilder pathBuilder = new StringBuilder();
         Folder refTo = this;
         while (refTo != null) {
-            pathBuilder.insert(0, String.format("%s", refTo.parent == null ? "/" : String.format("%s", refTo == this ? String.format("%s", refTo.name) : String.format("%s/", refTo.name))));
+            this.pathBuilder(refTo, pathBuilder, this);
             refTo = refTo.parent;
         }
         return pathBuilder.toString();
+    }
+
+    public String getPath_File(String name) {
+        // this method searches within currentDirectory, returns null if not found
+
+        StringBuilder sb = new StringBuilder();
+        ContainingType possibleMatch = this.names.get(name);
+        if (possibleMatch == null) { return null; } else {
+            while (possibleMatch != null) {
+                this.pathBuilder(possibleMatch, sb, possibleMatch);
+                possibleMatch = possibleMatch.parent;
+            }
+            return sb.toString();
+        }
+    }
+
+    public ContainingType findChild(Folder cd, String name) {
+        ArrayList<String> matchedPaths = new ArrayList<>();
+
+        
+        return null;
     }
 }
 class File extends ContainingType {
@@ -252,7 +318,9 @@ abstract class ContainingType extends UUID_Config {
         return accumulatedSize[0];
     }
 
-
+    public void pathBuilder(ContainingType refTo, StringBuilder sb, ContainingType compareTo) {
+        sb.insert(0, String.format("%s", refTo.parent == null ? "/" : String.format("%s", refTo == compareTo ? String.format("%s", refTo.name) : String.format("%s/", refTo.name))));
+    }
 }
 
 interface Command {
@@ -430,9 +498,10 @@ class CurrentPath implements Command {
     }
 }
 
-class SizeCommand extends SharedScanner implements Command {
+class SizeCommand implements Command {
     // size, size NAME
-    public SizeCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+    private final FileSystemManager ownedBy;
+    public SizeCommand(FileSystemManager ownedBy) { this.ownedBy = ownedBy; }
 
     @Override
     public String usage() {
@@ -447,12 +516,19 @@ class SizeCommand extends SharedScanner implements Command {
     @Override
     public boolean accepts(int argumentCount) {
 
-        return true;
+        return argumentCount == 0 || argumentCount == 1;
     }
 
     @Override
     public void execute(String[] arguments) {
-
+        // since reg would be len 0 and direct would be len 1
+        if (arguments.length == 0) { 
+            Folder cd = this.ownedBy.getCurrentDirectory();
+            System.out.println(cd != null ? cd.getSize(cd) : "No folder found");
+        } else {
+            ContainingType obj = this.ownedBy.getObject(arguments[0]);
+            System.out.println(obj != null ? obj.getSize(obj) : "No file/folder found");
+        }
     }
 }
 
@@ -601,6 +677,7 @@ abstract class SharedScanner {
 class FileSystemManager implements TwoFactorAuthentication {
     String name;
     HashMap<String, Command> commands = new HashMap<>();
+    //HashMap<Integer, ContainingType> createdContents = new HashMap<>();
     private Folder currentDirectory;
     public FileSystemManager(String name) {
         this.name = name;
@@ -626,6 +703,13 @@ class FileSystemManager implements TwoFactorAuthentication {
             }
         }
     }
+
+    // create file
+    // create folder
+
+    // get file/folder from String name
+    public ContainingType getObject(String fromName) { return this.currentDirectory.names.get(fromName); }
+
 
     public Folder getCurrentDirectory() { return this.currentDirectory; }
 
