@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -13,49 +14,91 @@ public class proj2 {
         Random rand = new Random();
 
 
-        Folder folderInstance = new Folder("holder", null);
-        File alpha = new File("alpha.txt", folderInstance);
-        File bravo = new File("bravo.txt", folderInstance);
-        File charlie = new File("charlie.txt", folderInstance);
-        File delta = new File("delta.txt", folderInstance);
-        File echo = new File("echo.txt", folderInstance);
-        File foxtrot = new File("foxtrot.txt", folderInstance);
-        File golf = new File("golf.txt", folderInstance);
-        File hotel = new File("hotel.txt", folderInstance);
+        Folder main = new Folder("main", null);
 
-        folderInstance.addToContents(alpha);
-        folderInstance.addToContents(bravo);
-        folderInstance.addToContents(charlie);
-        folderInstance.addToContents(delta);
-        folderInstance.addToContents(echo);
-        folderInstance.addToContents(foxtrot);
-        folderInstance.addToContents(golf);
-        folderInstance.addToContents(hotel);
+        File notes = new File("notes.txt", main);
+        File todo = new File("todo.txt", main);
+        File readme = new File("readme.md", main);
+        File data = new File("data.csv", main);
+        File logMain = new File("log.txt", main);
+        Folder docs = new Folder("docs", main);
+        Folder images = new Folder("images", main);
+        Folder code = new Folder("code", main);
+        Folder backup = new Folder("backup", main);
 
-        Folder level1 = new Folder("level1", null);
-        Folder level2 = new Folder("level2", level1);
-        Folder level3 = new Folder("level3", level2);
-        Folder level4 = new Folder("level4", level3);
-        Folder level5 = new Folder("level5", level4);
-        Folder level6 = new Folder("level6", level5);
-        Folder level7 = new Folder("level7", level6);
-        Folder level8 = new Folder("level8", level7);
-        Folder level9 = new Folder("level9", level8);
-        Folder level10 = new Folder("level10", level9);
+        File report = new File("report.txt", docs);
+        File summary = new File("summary.txt", docs);
+        File logDocs = new File("log.txt", docs);
+        Folder drafts = new Folder("drafts", docs);
+        Folder finalFolder = new Folder("final", docs);
+        Folder archive = new Folder("archive", docs);
 
-        level1.addToContents(level2);
-        level2.addToContents(level3);
-        level3.addToContents(level4);
-        level4.addToContents(level5);
-        level5.addToContents(level6);
-        level6.addToContents(level7);
-        level7.addToContents(level8);
-        level8.addToContents(level9);
-        level9.addToContents(level10);
+        File captions = new File("captions.txt", images);
+        File logImages = new File("log.txt", images);
+        File credits = new File("credits.txt", images);
+        Folder thumbnails = new Folder("thumbnails", images);
+        Folder raw = new Folder("raw", images);
+        Folder exports = new Folder("exports", images);
+        Folder icons = new Folder("icons", images);
 
+        File app = new File("app.java", code);
+        File util = new File("util.java", code);
+        File logCode = new File("log.txt", code);
+        File config = new File("config.txt", code);
+        Folder tests = new Folder("tests", code);
+        Folder lib = new Folder("lib", code);
 
-        System.out.println(level10.getPath());
-        System.out.println(folderInstance.getPath_File("foxtrot.txt"));
+        File old = new File("old.txt", backup);
+        File logBackup = new File("log.txt", backup);
+        File copy = new File("copy.txt", backup);
+        Folder week1 = new Folder("week1", backup);
+        Folder week2 = new Folder("week2", backup);
+        Folder week3 = new Folder("week3", backup);
+        Folder week4 = new Folder("week4", backup);
+        Folder week5 = new Folder("week5", backup);
+
+        main.addToContents(notes);
+        main.addToContents(todo);
+        main.addToContents(readme);
+        main.addToContents(data);
+        main.addToContents(logMain);
+        main.addToContents(docs);
+        main.addToContents(images);
+        main.addToContents(code);
+        main.addToContents(backup);
+
+        docs.addToContents(report);
+        docs.addToContents(summary);
+        docs.addToContents(logDocs);
+        docs.addToContents(drafts);
+        docs.addToContents(finalFolder);
+        docs.addToContents(archive);
+
+        images.addToContents(captions);
+        images.addToContents(logImages);
+        images.addToContents(credits);
+        images.addToContents(thumbnails);
+        images.addToContents(raw);
+        images.addToContents(exports);
+        images.addToContents(icons);
+
+        code.addToContents(app);
+        code.addToContents(util);
+        code.addToContents(logCode);
+        code.addToContents(config);
+        code.addToContents(tests);
+        code.addToContents(lib);
+
+        backup.addToContents(old);
+        backup.addToContents(logBackup);
+        backup.addToContents(copy);
+        backup.addToContents(week1);
+        backup.addToContents(week2);
+        backup.addToContents(week3);
+        backup.addToContents(week4);
+        backup.addToContents(week5);
+
+        System.out.println(main.findChild(main, "docs"));
     }
 }
 
@@ -225,31 +268,43 @@ class Folder extends ContainingType implements Fix_FileName {
         StringBuilder pathBuilder = new StringBuilder();
         Folder refTo = this;
         while (refTo != null) {
-            this.pathBuilder(refTo, pathBuilder, this);
+            this.pathBuilder(refTo, pathBuilder);
             refTo = refTo.parent;
         }
         return pathBuilder.toString();
     }
 
-    public String getPath_File(String name) {
+    public String getPath_File(String name, TreeMap<String, ContainingType> hm) {
         // this method searches within currentDirectory, returns null if not found
-
         StringBuilder sb = new StringBuilder();
-        ContainingType possibleMatch = this.names.get(name);
+        ContainingType possibleMatch = hm.get(name);
         if (possibleMatch == null) { return null; } else {
             while (possibleMatch != null) {
-                this.pathBuilder(possibleMatch, sb, possibleMatch);
+                this.pathBuilder(possibleMatch, sb);
                 possibleMatch = possibleMatch.parent;
             }
             return sb.toString();
+
+            // TODO: finds a doc, should only find files
         }
     }
 
-    public ContainingType findChild(Folder cd, String name) {
+    public ArrayList<String> findChild(Folder cd, String name) {
         ArrayList<String> matchedPaths = new ArrayList<>();
 
-        
-        return null;
+        // since main is the root, the getPath_File method searches as it goes level by leve
+            // root -> 1 -> 2 -> 3
+        // Paths are the thing that searches through parents in order to get full path
+        // an iteration really isnt needed well might be to see if the cd has any folders
+        // Rules
+            // Call method on cd
+            // iterate to find folders, if so, call method with that
+        matchedPaths.add(getPath_File(name, cd.names));
+        for (Map.Entry<String, ContainingType> pair: cd.names.entrySet()) {
+            if (pair.getValue().getClass().getSimpleName() == "Folder") { cd = (Folder) pair.getValue(); matchedPaths.addAll(findChild(cd, name)); }
+        }
+        matchedPaths.removeIf(Objects::isNull);
+        return matchedPaths;
     }
 }
 class File extends ContainingType {
@@ -318,8 +373,18 @@ abstract class ContainingType extends UUID_Config {
         return accumulatedSize[0];
     }
 
-    public void pathBuilder(ContainingType refTo, StringBuilder sb, ContainingType compareTo) {
-        sb.insert(0, String.format("%s", refTo.parent == null ? "/" : String.format("%s", refTo == compareTo ? String.format("%s", refTo.name) : String.format("%s/", refTo.name))));
+    public void pathBuilder(ContainingType refTo, StringBuilder sb) {
+        // Boolean Checks
+            // if parent is null -> /
+                // Else
+                    // refTo is equal to compareTo which would be the parent
+                        // just name or else name/
+        // since refTo incrementation is basically like a linked list with reftTo = refTo.parent
+            // each time this method is called refTo is never equal to the parent
+        //sb.insert(0, String.format("%s", refTo.parent == null ? "/" : String.format("%s", refTo.parent != null ? String.format("%s", refTo.name) : String.format("%s/", refTo.name))));
+        
+        // refTo = refTo.next
+        sb.insert(0, String.format("%s", refTo.parent != null ? String.format("/%s", refTo.name) : ""));
     }
 }
 
