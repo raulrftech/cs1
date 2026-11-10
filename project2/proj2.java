@@ -98,7 +98,6 @@ public class proj2 {
         backup.addToContents(week4);
         backup.addToContents(week5);
 
-        System.out.println(main.findChild(main, "docs"));
     }
 }
 
@@ -278,7 +277,7 @@ class Folder extends ContainingType implements Fix_FileName {
         // this method searches within currentDirectory, returns null if not found
         StringBuilder sb = new StringBuilder();
         ContainingType possibleMatch = hm.get(name);
-        if (possibleMatch == null) { return null; } else {
+        if (possibleMatch == null || possibleMatch instanceof Folder) { return null; } else {
             while (possibleMatch != null) {
                 this.pathBuilder(possibleMatch, sb);
                 possibleMatch = possibleMatch.parent;
@@ -597,9 +596,10 @@ class SizeCommand implements Command {
     }
 }
 
-class FindCommand extends SharedScanner implements Command {
+class FindCommand implements Command {
     // find NAME
-    public FindCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+    private final FileSystemManager ownedBy;
+    public FindCommand(FileSystemManager ownedBy) { this.ownedBy = ownedBy; }
 
     @Override
     public String usage() {
@@ -614,12 +614,15 @@ class FindCommand extends SharedScanner implements Command {
     @Override
     public boolean accepts(int argumentCount) {
 
-        return true;
+        return argumentCount == 1;
     }
 
     @Override
     public void execute(String[] arguments) {
-
+        Folder cd = this.ownedBy.getCurrentDirectory();
+        ArrayList<String> matches = cd.findChild(cd, arguments[0]);
+        System.out.println(String.format("Found %d matches", matches.size()));
+        for (String match: matches) { System.out.println(match); }
     }
 }
 

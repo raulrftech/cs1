@@ -191,3 +191,17 @@ Session 10 Nov 5 Evening
 Session 11 Nov 6 Afternoon
     Since the contents has all files and folders that directory has then that is the current root folder
     Which means whenever in the case if keyed by k,v pairs, that v.parent would be == this in which case that can be used as a conditional
+    This is basic level, iterate, input into its correct k,v which would be <String, Folder> or something similar
+
+Session 12 Nov 9 Night
+    - cd NAME: it needs to check if the folder is there, which would check the current directory's subdirectories & return true if found & switch to it. If it's not there, there can be some sort of error handling.
+    - cd ..: we just go one level up from the current directory, so it would be something like cd = cd.parent.
+    - cd /: basically the same thing, which would be while cd != null cd = cd.parent.
+    1. Changing the current directory (applies to all three forms)
+        - In execute, cd is a local variable holding a copy of the reference that getCurrentDirectory() returned.
+        - Reassigning it (cd = cd.parent) only re-points the local variable. The FSM's current directory does not change, because it is a reference.
+        - Your conclusion: a setter within the FSM, which the command calls through its reference to the FSM (ownedBy).
+    2. cd / loop condition
+        - Traced with the current folder being docs, one level under the root: the loop "while cd != null" keeps going until cd itself is null, so it stops one step past the root.
+        - Your correction: the loop should be "while cd.parent != null". Whenever it gets to the root, it checks the root's parent, and since that parent is null it breaks out of the loop. cd is then the root.
+        - From the root, the condition is false right away, so the loop never runs and you stay at the root.
