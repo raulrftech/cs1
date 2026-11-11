@@ -510,9 +510,10 @@ class List implements Command {
     }
 }
 
-class CD extends SharedScanner implements Command{
+class CD implements Command{
     // cd NAME, cd .. , cd /
-    public CD(Scanner fsm_Scanner) { super(fsm_Scanner); }
+    private final FileSystemManager ownedBy;
+    public CD(FileSystemManager ownedBy) { this.ownedBy = ownedBy; }
 
     @Override
     public String usage() {
@@ -527,12 +528,32 @@ class CD extends SharedScanner implements Command{
     @Override
     public boolean accepts(int argumentCount) {
 
-        return true;
+        return argumentCount == 1;
     }
 
     @Override
     public void execute(String[] arguments) {
+        String command = arguments[0].trim();
 
+        switch (command) {
+            case "..":
+                if (this.ownedBy.getCurrentDirectory().parent != null) {
+                    this.ownedBy.changeCD(this.ownedBy.getCurrentDirectory().parent); 
+                } else { System.out.println("You are at the upper-most directory already."); }
+                break;
+            case "/":
+                Folder cd = this.ownedBy.getCurrentDirectory();
+                while (cd.parent != null) {
+                    cd = cd.parent;
+                }
+                this.ownedBy.changeCD(cd);
+                break;
+            default:
+                Folder changeTo_Directory = this.ownedBy.nameExists(command);
+                if (changeTo_Directory != null) {
+                    this.ownedBy.changeCD(changeTo_Directory);
+                } else { System.out.println("No matching directory found, please try again."); }
+        }
     }
 }
 
@@ -678,9 +699,10 @@ class DiskCommand extends SharedScanner implements Command {
     }
 }
 
-class HelpCommand extends SharedScanner implements Command {
+class HelpCommand implements Command {
     // help
-    public HelpCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+    private final FileSystemManager ownedBy;
+    public HelpCommand(FileSystemManager ownedBy) { this.ownedBy = ownedBy; }
 
     @Override
     public String usage() {
@@ -696,12 +718,14 @@ class HelpCommand extends SharedScanner implements Command {
     @Override
     public boolean accepts(int argumentCount) {
         
-        return true;
+        return argumentCount == 0;
     }
 
     @Override
     public void execute(String[] arguments) {
-
+        for (Map.Entry<String, Command> pair : this.ownedBy.commands.entrySet()) {
+            System.out.println(String.format("Command: %s%nUsage:    %s", pair.getKey(), pair.getValue().usage()));
+        }
     }
 }
 
@@ -772,6 +796,14 @@ class FileSystemManager implements TwoFactorAuthentication {
         }
     }
 
+    public Folder nameExists(String name) { 
+        ContainingType found = this.currentDirectory.names.get(name);
+        if (found instanceof File || found == null) { return null; } else {
+            Folder casted = (Folder) found;
+            return casted;
+        }
+    }
+    public void changeCD(Folder to) { this.currentDirectory = to; }
     // create file
     // create folder
 
