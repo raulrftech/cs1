@@ -6,98 +6,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 
 public class proj2 {
     public static void main(String[] args) {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
-
-
-        Folder main = new Folder("main", null);
-
-        File notes = new File("notes.txt", main);
-        File todo = new File("todo.txt", main);
-        File readme = new File("readme.md", main);
-        File data = new File("data.csv", main);
-        File logMain = new File("log.txt", main);
-        Folder docs = new Folder("docs", main);
-        Folder images = new Folder("images", main);
-        Folder code = new Folder("code", main);
-        Folder backup = new Folder("backup", main);
-
-        File report = new File("report.txt", docs);
-        File summary = new File("summary.txt", docs);
-        File logDocs = new File("log.txt", docs);
-        Folder drafts = new Folder("drafts", docs);
-        Folder finalFolder = new Folder("final", docs);
-        Folder archive = new Folder("archive", docs);
-
-        File captions = new File("captions.txt", images);
-        File logImages = new File("log.txt", images);
-        File credits = new File("credits.txt", images);
-        Folder thumbnails = new Folder("thumbnails", images);
-        Folder raw = new Folder("raw", images);
-        Folder exports = new Folder("exports", images);
-        Folder icons = new Folder("icons", images);
-
-        File app = new File("app.java", code);
-        File util = new File("util.java", code);
-        File logCode = new File("log.txt", code);
-        File config = new File("config.txt", code);
-        Folder tests = new Folder("tests", code);
-        Folder lib = new Folder("lib", code);
-
-        File old = new File("old.txt", backup);
-        File logBackup = new File("log.txt", backup);
-        File copy = new File("copy.txt", backup);
-        Folder week1 = new Folder("week1", backup);
-        Folder week2 = new Folder("week2", backup);
-        Folder week3 = new Folder("week3", backup);
-        Folder week4 = new Folder("week4", backup);
-        Folder week5 = new Folder("week5", backup);
-
-        main.addToContents(notes);
-        main.addToContents(todo);
-        main.addToContents(readme);
-        main.addToContents(data);
-        main.addToContents(logMain);
-        main.addToContents(docs);
-        main.addToContents(images);
-        main.addToContents(code);
-        main.addToContents(backup);
-
-        docs.addToContents(report);
-        docs.addToContents(summary);
-        docs.addToContents(logDocs);
-        docs.addToContents(drafts);
-        docs.addToContents(finalFolder);
-        docs.addToContents(archive);
-
-        images.addToContents(captions);
-        images.addToContents(logImages);
-        images.addToContents(credits);
-        images.addToContents(thumbnails);
-        images.addToContents(raw);
-        images.addToContents(exports);
-        images.addToContents(icons);
-
-        code.addToContents(app);
-        code.addToContents(util);
-        code.addToContents(logCode);
-        code.addToContents(config);
-        code.addToContents(tests);
-        code.addToContents(lib);
-
-        backup.addToContents(old);
-        backup.addToContents(logBackup);
-        backup.addToContents(copy);
-        backup.addToContents(week1);
-        backup.addToContents(week2);
-        backup.addToContents(week3);
-        backup.addToContents(week4);
-        backup.addToContents(week5);
-
     }
 }
 
@@ -206,10 +121,17 @@ class FileHolder implements Password, TwoFactorAuthentication {
 }
 
 interface Fix_FileName {
-    default String fixFileName(String name, int i) {
-        if (i > name.length() - 1) { return ""; }
-        String corrected = "";
-        return name.charAt(i) != '/' && name.charAt(i) != '\\' && name.charAt(i) != ' ' ? (corrected + name.charAt(i) + fixFileName(name, i + 1)) : fixFileName(name, i + 1);
+    default String fixFileName(String name, int i, boolean isFile) {
+        if (isFile) {
+            if (i > name.length() - 1) { return ""; }
+            String corrected = "";
+            return name.charAt(i) != '/' && name.charAt(i) != '\\' && name.charAt(i) != ' ' ? (corrected + name.charAt(i) + fixFileName(name, i + 1, isFile)) : fixFileName(name, i + 1, isFile);
+        } else {
+            if (i > name.length() - 1) { return ""; }
+            String corrected = "";
+            return name.charAt(i) != '/' && name.charAt(i) != '\\' && name.charAt(i) != ' ' && name.charAt(i) != '.' ? (corrected + name.charAt(i) + fixFileName(name, i + 1, isFile)) : fixFileName(name, i + 1, isFile);
+        }
+        
     }
 }
 
@@ -246,7 +168,8 @@ class Folder extends ContainingType implements Fix_FileName {
     public boolean addToContents(ContainingType appending) {
         // this is case-sensitive already since different letters have different Unix values
         // chek for spaces, \ or / in name
-        String fixedName = fixFileName(appending.name, 0);
+        boolean isFile = appending instanceof File;
+        String fixedName = fixFileName(appending.name, 0, isFile);
         if (fixedName.isEmpty()) { return false; } else { appending.name = fixedName; }
         if (names.containsKey(appending.name)) { return false; }
         if (appending.name.charAt(0) == '.') { return false; }
@@ -254,7 +177,7 @@ class Folder extends ContainingType implements Fix_FileName {
         int periodCounter = 0;
         for (char c: appending.name.toCharArray()) { if (c=='.') {
             periodCounter++;
-            if (appending.getClass().getSimpleName() == "Folder") { return false; } else {
+            if (appending instanceof Folder) { return false; } else {
                 if (periodCounter > 1 ) { return false; } else { continue; }
             }
         }}
@@ -369,7 +292,7 @@ abstract class ContainingType extends UUID_Config {
             File casted = (File) self;
             Arrays.asList(casted.body.split(" ")).forEach((String s) -> accumulatedSize[0] += s.length());
         }
-        return accumulatedSize[0];
+        return accumulatedSize[0] / 1000;
     }
 
     public void pathBuilder(ContainingType refTo, StringBuilder sb) {
@@ -768,13 +691,14 @@ abstract class SharedScanner {
 
 class FileSystemManager implements TwoFactorAuthentication {
     String name;
+    Folder root;
     HashMap<String, Command> commands = new HashMap<>();
     //HashMap<Integer, ContainingType> createdContents = new HashMap<>();
     private Folder currentDirectory;
     public FileSystemManager(String name) {
         this.name = name;
-        this.currentDirectory = new Folder("root", null);
-
+        this.root = new Folder("root", null);
+        this.currentDirectory = root;
     }
 
     public FileHolder createFileHolder(Scanner userCreator, Random rand) {
@@ -819,5 +743,79 @@ class FileSystemManager implements TwoFactorAuthentication {
 
     public void logout() {
 
+    }
+}
+
+class Disk {
+    Memory disk_head;
+    double maxSize;
+    FileSystemManager fsm;
+
+    private Disk(Memory disk_head, double maxSize, FileSystemManager fsm) {
+        this.disk_head = disk_head;
+        this.maxSize = maxSize;
+        this.fsm = fsm;
+    }
+
+    public static Disk createDisk(Scanner proppedScanner, FileSystemManager fsm) {
+        // Set Up - Disk Size
+        System.out.println("What size would you like your disk to be? You can enter any number between 1.00 - 1000.00 kb, inclusive. Default is 100 kb.");
+        double size = 0;
+        try {
+            double temp = Integer.parseInt(proppedScanner.nextLine().trim());
+            size = temp < 0 || temp > 1000 ? 100 : temp;
+            System.out.println(String.format("Set size to %.2f kilobytes", size));
+        } catch (Exception e) {
+            System.out.println("Wrong input was found, defaulting disk size to 100 kilobytes.");
+            size = 100;
+        }
+
+        // Set Up - First File
+        System.out.println("You are now going to create your first file, the name and file extension is required such as \"testFile.txt\"");
+        String name = proppedScanner.nextLine().trim();
+        File newFile = new File(name, null);
+
+        // Write - To First File
+
+        // Set Up - First Folder
+        System.out.println("Would you like to create a new folder? Enter y for yes or n for no");
+        boolean decision = proppedScanner.nextLine().trim().equalsIgnoreCase("y");
+        if (decision) {
+            System.out.println("Please enter a name for the new file. Please keep in mind, any \\ or / or . are not allowed");
+            String folderName = proppedScanner.nextLine().trim();
+            Folder newFolder = new Folder(folderName, fsm.root);
+        } else {
+            System.out.println("You chose not to create a new folder, the only 'folder' on the system is the root folder. You can continue.");
+            newFile.parent = fsm.root;
+        }
+
+        Memory m1 = new Memory(null);
+
+
+
+
+        return null;
+    }
+}
+
+class Memory {
+    Set<File> files;
+    Set<String> containingText;
+    Memory prev;
+    Memory next;
+    double size;
+
+    public Memory(Memory prev) {
+        this.prev = prev;
+        this.files = new HashSet<>();
+        this.containingText = new HashSet<>();
+        this.next = null;
+        this.size = 0;
+    }
+
+    public static Memory createNode(Memory prev, File withFile) {
+        // this is going to be the failable method for creating a node
+        // this is going to check current size of the disk so i was thinking of including the prop to a Disk instance
+        // has to check the size of the file trying to get added and also if it has been included already which will utilize a different method
     }
 }
