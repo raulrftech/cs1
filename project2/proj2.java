@@ -13,6 +13,29 @@ public class proj2 {
     public static void main(String[] args) {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
+
+        File empty = new File("empty.txt", null);
+        File small = new File("small.txt", null);
+        small.writeTo("hello world");
+        File mid = new File("mid.txt", null);
+        mid.writeTo("a".repeat(456));
+        File full = new File("full.txt", null);
+        full.writeTo("a".repeat(1000));
+        File over = new File("over.txt", null);
+        over.writeTo("a".repeat(1001));
+        File twice = new File("twice.txt", null);
+        twice.writeTo("a".repeat(600));
+        twice.writeTo("b".repeat(600));
+        File padded = new File("padded.txt", null);
+        padded.writeTo("   hi   ");
+
+        System.out.println(String.format("%s size: %.3f", empty.name, empty.size));
+        System.out.println(String.format("%s size: %.3f", small.name, small.size));
+        System.out.println(String.format("%s size: %.3f", mid.name, mid.size));
+        System.out.println(String.format("%s size: %.3f", full.name, full.size));
+        System.out.println(String.format("%s size: %.3f", over.name, over.size));
+        System.out.println(String.format("%s size: %.3f", twice.name, twice.size));
+        System.out.println(String.format("%s size: %.3f", padded.name, padded.size));
     }
 }
 
@@ -161,8 +184,10 @@ class Folder extends ContainingType implements Fix_FileName {
         }
     }
 
+    double size;
     public Folder(String name, Folder parent) {
         super(name, parent);
+        this.size = 0.000;
     }
 
     public boolean addToContents(ContainingType appending) {
@@ -182,6 +207,7 @@ class Folder extends ContainingType implements Fix_FileName {
             }
         }}
         names.put(appending.name, appending);
+        this.size += appending.getSize(appending);
         contents.putIfAbsent(appending.id, appending); appending.parent = this; return true;
         // TODO: if exists in another folder already, prompt to move, refer to line 146-148 on brainstorming.txt
     }
@@ -232,10 +258,32 @@ class Folder extends ContainingType implements Fix_FileName {
 class File extends ContainingType {
     String body; // TODO: implement history record
     String type;
+    double size;
+    HashMap<Integer, String> mb_parts = new HashMap<>();
     public File(String name, Folder parent) {
         super(name, parent);
         this.body = "";
         this.type = name.substring(name.indexOf(".") >= 0 ? name.indexOf(".") + 1 : 0);
+        this.size = 0.001;
+    }
+
+    public void writeTo(String with) {
+        double addedSize = with.trim().length() / 1000.00;
+        this.size += addedSize;
+        this.body = String.format("%s %s", this.body, with);
+        with = with.trim();
+        for (int i = 0; i < with.length(); i++) {
+            int index = Math.max((i / 1000), this.getFirstAvailable());
+            if (mb_parts.get(index).length() >= 1000) { index += 1; }
+            mb_parts.merge(index, String.valueOf(with.charAt(i)), (o, n) -> o + n);
+        }
+    }
+    public int getFirstAvailable() {
+        int highest = 0;
+        for (Map.Entry<Integer, String> pair: mb_parts.entrySet()) {
+            highest = Math.max(highest, pair.getKey());
+        }
+        return highest;
     }
 }
 
@@ -282,7 +330,7 @@ abstract class ContainingType extends UUID_Config {
     public double getSize(ContainingType self) {
         double[] accumulatedSize = {0.0};
 
-        if (self.getClass().getSimpleName() == "Folder") {
+        if (self instanceof Folder) {
             Folder casted = (Folder) self;
             for (Map.Entry<Integer, ContainingType> pair: casted.contents.entrySet()) {
                 accumulatedSize[0] += getSize(pair.getValue());
@@ -290,9 +338,9 @@ abstract class ContainingType extends UUID_Config {
         } else {
             // TODO: look at required implementation of Disk in proj desc
             File casted = (File) self;
-            Arrays.asList(casted.body.split(" ")).forEach((String s) -> accumulatedSize[0] += s.length());
+            accumulatedSize[0] += casted.size;
         }
-        return accumulatedSize[0] / 1000;
+        return accumulatedSize[0];
     }
 
     public void pathBuilder(ContainingType refTo, StringBuilder sb) {
@@ -750,11 +798,13 @@ class Disk {
     Memory disk_head;
     double maxSize;
     FileSystemManager fsm;
+    double freeSpace;
 
     private Disk(Memory disk_head, double maxSize, FileSystemManager fsm) {
         this.disk_head = disk_head;
         this.maxSize = maxSize;
         this.fsm = fsm;
+        this.freeSpace = maxSize;
     }
 
     public static Disk createDisk(Scanner proppedScanner, FileSystemManager fsm) {
@@ -775,7 +825,15 @@ class Disk {
         String name = proppedScanner.nextLine().trim();
         File newFile = new File(name, null);
 
-        // Write - To First File
+        // Write - To First File, conditional
+        System.out.println(String.format("Would you like to write to %s? Enter y for yes or n for no", newFile.name));
+        boolean writeDecision = proppedScanner.nextLine().trim().equalsIgnoreCase("y");
+        if (writeDecision) {
+            System.out.println("Enter the text to be entered into the file");
+            String body = proppedScanner.nextLine().trim();
+            newFile.writeTo(body);
+            // subtract space from free space
+        }
 
         // Set Up - First Folder
         System.out.println("Would you like to create a new folder? Enter y for yes or n for no");
@@ -784,6 +842,11 @@ class Disk {
             System.out.println("Please enter a name for the new file. Please keep in mind, any \\ or / or . are not allowed");
             String folderName = proppedScanner.nextLine().trim();
             Folder newFolder = new Folder(folderName, fsm.root);
+
+            // Add to Folder or Keep In Root
+            System.out.println(String.format("Would you like to add %s to the new folder '%s'? Enter y for yes or n for no.", newFile.name, newFolder.name));
+            boolean addToFolder = proppedScanner.nextLine().trim().equalsIgnoreCase("y");
+            if (addToFolder) { newFolder.addToContents(newFile); }
         } else {
             System.out.println("You chose not to create a new folder, the only 'folder' on the system is the root folder. You can continue.");
             newFile.parent = fsm.root;
@@ -813,9 +876,19 @@ class Memory {
         this.size = 0;
     }
 
-    public static Memory createNode(Memory prev, File withFile) {
+    public static ArrayList<Memory> createNode(Memory prev, File withFile) {
         // this is going to be the failable method for creating a node
         // this is going to check current size of the disk so i was thinking of including the prop to a Disk instance
         // has to check the size of the file trying to get added and also if it has been included already which will utilize a different method
+        ArrayList<Memory> nodes = new ArrayList<>();
+        Memory firstNode = new Memory(null);
+        firstNode.containingText.add(withFile.mb_parts.get(0));
+        return null;
+        // TODO: this should be a generic func, this needs a connection to disks memoryHead
+        //      Also consider the fact that a file may not have a body but still takes up some sort of space thus needs a designated node
+        //      Generating nodes shall only be used whenever necessary so that uhhh
+        // diskSize dictates how many nodes
+            // this should be a basic while loop with setting prev to prevNode made and vice versa
+            // Do Not set files, that is for another method
     }
 }
