@@ -14,28 +14,8 @@ public class proj2 {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
 
-        File empty = new File("empty.txt", null);
-        File small = new File("small.txt", null);
-        small.writeTo("hello world");
-        File mid = new File("mid.txt", null);
-        mid.writeTo("a".repeat(456));
-        File full = new File("full.txt", null);
-        full.writeTo("a".repeat(1000));
-        File over = new File("over.txt", null);
-        over.writeTo("a".repeat(1001));
-        File twice = new File("twice.txt", null);
-        twice.writeTo("a".repeat(600));
-        twice.writeTo("b".repeat(600));
-        File padded = new File("padded.txt", null);
-        padded.writeTo("   hi   ");
-
-        System.out.println(String.format("%s size: %.3f", empty.name, empty.size));
-        System.out.println(String.format("%s size: %.3f", small.name, small.size));
-        System.out.println(String.format("%s size: %.3f", mid.name, mid.size));
-        System.out.println(String.format("%s size: %.3f", full.name, full.size));
-        System.out.println(String.format("%s size: %.3f", over.name, over.size));
-        System.out.println(String.format("%s size: %.3f", twice.name, twice.size));
-        System.out.println(String.format("%s size: %.3f", padded.name, padded.size));
+        String test = "Hello, my name is Raul Rodriguez";
+        System.out.println(test.substring(0, 1000 > test.length() ? test.length() : 1000));
     }
 }
 
@@ -809,11 +789,11 @@ class Disk {
 
     public static Disk createDisk(Scanner proppedScanner, FileSystemManager fsm) {
         // Set Up - Disk Size
-        System.out.println("What size would you like your disk to be? You can enter any number between 1.00 - 1000.00 kb, inclusive. Default is 100 kb.");
-        double size = 0;
+        System.out.println("What size would you like your disk to be? You can enter any number between 1 - 1000 kb, inclusive. Default is 100 kb.");
+        int size = 0;
         try {
-            double temp = Integer.parseInt(proppedScanner.nextLine().trim());
-            size = temp < 0 || temp > 1000 ? 100 : temp;
+            int temp = Integer.parseInt(proppedScanner.nextLine().trim());
+            size = temp < 1 || temp > 1000 ? 100 : temp;
             System.out.println(String.format("Set size to %.2f kilobytes", size));
         } catch (Exception e) {
             System.out.println("Wrong input was found, defaulting disk size to 100 kilobytes.");
@@ -852,12 +832,33 @@ class Disk {
             newFile.parent = fsm.root;
         }
 
-        Memory m1 = new Memory(null);
+        Memory diskHead = Memory.createChain(size);
+        // set firstFile to node
+        assignNodes_File(newFile);
 
+        return new Disk(diskHead, size / 1000.0, fsm);
+    }
 
+    public static void assignNodes_File(File file) {
+        int maxNodes = file.getFirstAvailable() + 1;
+        // since maxDisk size ranges between 1-1000 (0.001mb - 1mb)
+        //  maxDisk is stored as size / 1000 ie 250 / 1000 -> 0.25 or 250 nodes so size / 100
 
-
-        return null;
+        // get the reqd amt of nodes to suffice the size of the file, assign text
+        int count = 0;
+        ArrayList<Memory> nodesToAssign = new ArrayList<>();
+        Memory ph = this.disk_head;
+        while (count != maxNodes) {
+            nodesToAssign.add(ph);
+            ph = ph.next;
+            count++;
+        }
+        String bodyOf = file.body;
+        int cI = 0;
+        while (bodyOf.isEmpty() == false) {
+            bodyOf = nodesToAssign.get(cI).assignText(bodyOf);
+            cI++;
+        }
     }
 }
 
@@ -876,19 +877,31 @@ class Memory {
         this.size = 0;
     }
 
-    public static ArrayList<Memory> createNode(Memory prev, File withFile) {
-        // this is going to be the failable method for creating a node
-        // this is going to check current size of the disk so i was thinking of including the prop to a Disk instance
-        // has to check the size of the file trying to get added and also if it has been included already which will utilize a different method
-        ArrayList<Memory> nodes = new ArrayList<>();
+    public static Memory createChain(int toSize) {
         Memory firstNode = new Memory(null);
-        firstNode.containingText.add(withFile.mb_parts.get(0));
-        return null;
-        // TODO: this should be a generic func, this needs a connection to disks memoryHead
-        //      Also consider the fact that a file may not have a body but still takes up some sort of space thus needs a designated node
-        //      Generating nodes shall only be used whenever necessary so that uhhh
-        // diskSize dictates how many nodes
-            // this should be a basic while loop with setting prev to prevNode made and vice versa
-            // Do Not set files, that is for another method
+        Memory ph = firstNode;
+        while (toSize > 1) {
+            ph.next = new Memory(ph);
+            ph = ph.next;
+            toSize--;
+        }
+        return firstNode;
+    }
+
+    public String assignText(String fileBody) {
+        // determine size of current text held in containingText
+        // get substring that can fit in this file, return the remainder
+
+        // current length of containingText, can be something like 833 or 27 -> 167 & 973 that it needs to be filled
+        int[] currentSize = {0};
+        containingText.forEach((body) -> currentSize[0] += body.length());
+
+        int sizeToAdd = 1000 - currentSize[0];
+        int validSpace = sizeToAdd > fileBody.length() ? fileBody.length() : sizeToAdd;
+        String toAdd = fileBody.substring(0, validSpace);
+
+        containingText.add(toAdd);
+        String toReturn = fileBody.substring(validSpace);
+        return toReturn;
     }
 }
