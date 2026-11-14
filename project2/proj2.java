@@ -13,9 +13,8 @@ public class proj2 {
     public static void main(String[] args) {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
-
-        String test = "Hello, my name is Raul Rodriguez";
-        System.out.println(test.substring(0, 1000 > test.length() ? test.length() : 1000));
+        FileSystemManager fsm = new FileSystemManager("null");
+        Disk disk = Disk.createDisk(globalScanner, fsm);
     }
 }
 
@@ -248,13 +247,13 @@ class File extends ContainingType {
     }
 
     public void writeTo(String with) {
-        double addedSize = with.trim().length() / 1000.00;
+        double addedSize = with.trim().length() / 1_000_000.00;
         this.size += addedSize;
         this.body = String.format("%s %s", this.body, with);
         with = with.trim();
         for (int i = 0; i < with.length(); i++) {
             int index = Math.max((i / 1000), this.getFirstAvailable());
-            if (mb_parts.get(index).length() >= 1000) { index += 1; }
+            if (mb_parts.getOrDefault(index, body).length() >= 1000) { index += 1; }
             mb_parts.merge(index, String.valueOf(with.charAt(i)), (o, n) -> o + n);
         }
     }
@@ -794,8 +793,9 @@ class Disk {
         try {
             int temp = Integer.parseInt(proppedScanner.nextLine().trim());
             size = temp < 1 || temp > 1000 ? 100 : temp;
-            System.out.println(String.format("Set size to %.2f kilobytes", size));
+            System.out.println(String.format("Set size to %d kilobytes", size));
         } catch (Exception e) {
+            System.out.println(String.format("Fucked up on the parsing of the int. Message: %s", e.getMessage()));
             System.out.println("Wrong input was found, defaulting disk size to 100 kilobytes.");
             size = 100;
         }
@@ -812,7 +812,7 @@ class Disk {
             System.out.println("Enter the text to be entered into the file");
             String body = proppedScanner.nextLine().trim();
             newFile.writeTo(body);
-            // subtract space from free space
+            if (newFile.size > size) { System.out.println("Write is too big, please restart"); return null; }
         }
 
         // Set Up - First Folder
@@ -833,13 +833,17 @@ class Disk {
         }
 
         Memory diskHead = Memory.createChain(size);
-        // set firstFile to node
-        assignNodes_File(newFile);
 
-        return new Disk(diskHead, size / 1000.0, fsm);
+        Disk disk = new Disk(diskHead, size / 1000.0, fsm);
+        // set firstFile to node
+        assignNodes_File(disk, newFile);
+        disk.freeSpace -= newFile.size;
+        System.out.println(newFile.size);
+        System.out.println(String.format("Files: %s%nMax Size: %.5f%nFree Space: %.5f", disk.disk_head.filesSummary(), disk.maxSize, disk.freeSpace));
+        return disk;
     }
 
-    public static void assignNodes_File(File file) {
+    public static void assignNodes_File(Disk toDisk, File file) {
         int maxNodes = file.getFirstAvailable() + 1;
         // since maxDisk size ranges between 1-1000 (0.001mb - 1mb)
         //  maxDisk is stored as size / 1000 ie 250 / 1000 -> 0.25 or 250 nodes so size / 100
@@ -847,7 +851,7 @@ class Disk {
         // get the reqd amt of nodes to suffice the size of the file, assign text
         int count = 0;
         ArrayList<Memory> nodesToAssign = new ArrayList<>();
-        Memory ph = this.disk_head;
+        Memory ph = toDisk.disk_head;
         while (count != maxNodes) {
             nodesToAssign.add(ph);
             ph = ph.next;
@@ -857,8 +861,10 @@ class Disk {
         int cI = 0;
         while (bodyOf.isEmpty() == false) {
             bodyOf = nodesToAssign.get(cI).assignText(bodyOf);
+            nodesToAssign.get(cI).files.add(file);
             cI++;
         }
+        
     }
 }
 
@@ -886,6 +892,12 @@ class Memory {
             toSize--;
         }
         return firstNode;
+    }
+
+    public String filesSummary() {
+        StringBuilder sb = new StringBuilder();
+        files.forEach((file) -> sb.append(String.format("File(%s): %.5f", file.name, file.size)));
+        return sb.toString();
     }
 
     public String assignText(String fileBody) {
