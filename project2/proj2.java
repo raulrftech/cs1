@@ -13,8 +13,13 @@ public class proj2 {
     public static void main(String[] args) {
         Scanner globalScanner = new Scanner(System.in);
         Random rand = new Random();
+        
+
+
         FileSystemManager fsm = new FileSystemManager("null");
+        FileHolder user = fsm.createFileHolder(globalScanner, rand);
         Disk disk = Disk.createDisk(globalScanner, fsm);
+        fsm.startup(user, globalScanner);
     }
 }
 
@@ -137,6 +142,7 @@ interface Fix_FileName {
     }
 }
 
+// MARK: Start(Folder)
 class Folder extends ContainingType implements Fix_FileName {
     TreeMap<Integer, ContainingType> contents = new TreeMap<>();
     public TreeMap<String, ContainingType> names = new TreeMap<>();
@@ -167,6 +173,10 @@ class Folder extends ContainingType implements Fix_FileName {
     public Folder(String name, Folder parent) {
         super(name, parent);
         this.size = 0.000;
+    }
+
+    public File mainTouch(String fileName, Disk d) {
+        return new File(fileName, this, d);
     }
 
     public boolean addToContents(ContainingType appending) {
@@ -233,17 +243,67 @@ class Folder extends ContainingType implements Fix_FileName {
         matchedPaths.removeIf(Objects::isNull);
         return matchedPaths;
     }
+
+    public ArrayList<File> clearContents_Folder(FileSystemManager fsm, Folder cF) {
+        double totalSize = cF.getSize(cF);
+        fsm.md.freeSpace += totalSize;
+        ArrayList<Folder> foldersToRemove = new ArrayList<>();
+        ArrayList<File> filesToRemove = new ArrayList<>();
+
+        for (Map.Entry<Integer, ContainingType> pair: this.contents.entrySet()) {
+            if (pair.getValue() instanceof Folder) {
+                Folder f = (Folder) pair.getValue();
+                foldersToRemove.add(f);
+                cF.contents.remove(f.id, f);
+                return clearContents_Folder(fsm, f);
+            } else {
+                File fi = (File) pair.getValue();
+                fi.parent = null;
+                filesToRemove.add(fi);
+                cF.contents.remove(fi.id, fi);
+            }
+        }
+
+        foldersToRemove.forEach(folder -> {
+            folder = null;
+        });
+        return filesToRemove;
+    }
+
+    public ContainingType findTarget(String name) {
+        ContainingType target = names.get(name);
+        if (target == null) { return null; }
+        return target;
+    }
+
+    public boolean removeFile(ContainingType file) {
+        File f = (File) file;
+        if (f == null) { return false; }
+        names.remove(f.name);
+        contents.remove(f.id);
+        return true;
+    }
 }
+// MARK: End(Folder)
+
+
+
+
+
+// MARK: Start(File)
 class File extends ContainingType {
     String body; // TODO: implement history record
     String type;
     double size;
     HashMap<Integer, String> mb_parts = new HashMap<>();
-    public File(String name, Folder parent) {
+    ArrayList<Memory> assignedNodes;
+    public File(String name, Folder parent, Disk d) {
         super(name, parent);
         this.body = "";
         this.type = name.substring(name.indexOf(".") >= 0 ? name.indexOf(".") + 1 : 0);
         this.size = 0.001;
+        d.freeSpace -= size;
+        this.assignedNodes = new ArrayList<>();
     }
 
     public void writeTo(String with) {
@@ -265,7 +325,7 @@ class File extends ContainingType {
         return highest;
     }
 }
-
+// MARK: End(File)
 abstract class UUID_Config {
     static ArrayList<Integer> used_UUIDS = new ArrayList<>();
 
@@ -336,7 +396,7 @@ abstract class ContainingType extends UUID_Config {
         sb.insert(0, String.format("%s", refTo.parent != null ? String.format("/%s", refTo.name) : ""));
     }
 }
-
+// MARK: Start(Commands)
 interface Command {
     // returns a String, the text showing how to type the command
     String usage();
@@ -393,14 +453,12 @@ class Touch implements Command {
 
     @Override
     public boolean accepts(int argumentCount) {
-
-        return true;
+        return argumentCount == 1;
     }
 
     @Override
     public void execute(String[] arguments) {
-
-
+       if (!this.ownedBy.handleTouch(arguments, this)) { System.out.println("Some odd error occurred, try again."); }
     }
 }
 
@@ -597,9 +655,10 @@ class FindCommand implements Command {
     }
 }
 
-class RemoveCommand extends SharedScanner implements Command {
+class RemoveCommand implements Command {
     // rm NAME
-    public RemoveCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+    private final FileSystemManager ownedBy;
+    public RemoveCommand(FileSystemManager ownedBy) { this.ownedBy = ownedBy; }
 
     @Override
     public String usage() {
@@ -613,19 +672,30 @@ class RemoveCommand extends SharedScanner implements Command {
 
     @Override
     public boolean accepts(int argumentCount) {
-
-        return true;
+        return argumentCount == 1;
     }
 
     @Override
     public void execute(String[] arguments) {
-
+        if (this.accepts(arguments.length)) {
+            Folder fo = this.ownedBy.getCurrentDirectory();
+            ContainingType target = fo.findTarget(arguments[0]);
+            if (target == null) { System.out.println("Some error occurred, please try again."); return;}
+            if (target instanceof Folder) {
+                ArrayList<File> fi_rm = fo.clearContents_Folder(ownedBy, (Folder) target);
+                this.ownedBy.md.removeFiles(fi_rm);
+            } else {
+                fo.removeFile((File) target);
+            }
+        } else { System.out.println("invalid input, please try again"); return; }
+        
     }
 }
 
-class DiskCommand extends SharedScanner implements Command {
+class DiskCommand implements Command {
     // disk
-    public DiskCommand(Scanner fsm_Scanner) { super(fsm_Scanner); }
+    private final FileSystemManager fsm;
+    public DiskCommand(FileSystemManager fsm) { this.fsm = fsm; }
 
     @Override
     public String usage() {
@@ -640,12 +710,16 @@ class DiskCommand extends SharedScanner implements Command {
     @Override
     public boolean accepts(int argumentCount) {
 
-        return true;
+        return argumentCount == 0;
     }
 
     @Override
     public void execute(String[] arguments) {
-
+        if (this.accepts(arguments.length)) {
+            
+        } else { 
+            System.out.println("invalid input, please try again"); return; 
+        }
     }
 }
 
@@ -706,7 +780,7 @@ class ExitCommand extends SharedScanner implements Command {
 
     }
 }
-
+// MARK: End(Commands)
 abstract class SharedScanner {
     Scanner fsm_Scanner;
 
@@ -715,24 +789,45 @@ abstract class SharedScanner {
     }
 }
 
-
+// MARK: Start(FSM)
 class FileSystemManager implements TwoFactorAuthentication {
     String name;
     Folder root;
     HashMap<String, Command> commands = new HashMap<>();
     //HashMap<Integer, ContainingType> createdContents = new HashMap<>();
     private Folder currentDirectory;
+    Disk md;
     public FileSystemManager(String name) {
         this.name = name;
         this.root = new Folder("root", null);
         this.currentDirectory = root;
+        this.md = null;
+        this.commands.put("ls", new List(this));
+        this.commands.put("mkdir", new MakeDirectory(this));
+        this.commands.put("Cd", new CD(this));
+        this.commands.put("pwd", new CurrentPath(this));
+        this.commands.put("size", new SizeCommand(this));
+        this.commands.put("find", new FindCommand(this));
+        this.commands.put("rm", new RemoveCommand(this));
+        this.commands.put("disk", new DiskCommand(this));
+        this.commands.put("help", new HelpCommand(this));
     }
 
     public FileHolder createFileHolder(Scanner userCreator, Random rand) {
         // add to static hm of users
         FileHolder newUser = FileHolder.createHolder(userCreator, rand);
         if (newUser != null) { newUser.fsm = this; }
+        this.md = Disk.createDisk(userCreator, this);
         return newUser;
+    }
+
+    public void startup(FileHolder user, Scanner pS) {
+        String input = "";
+        while (input.trim().equalsIgnoreCase("exit") == false) {
+            System.out.println("Welcome, you can now begin to use the file system. Enter command");
+            String command = pS.nextLine().trim();
+            this.handleCommand(command);
+        }
     }
 
     public void handleCommand(String userInput) {
@@ -771,6 +866,16 @@ class FileSystemManager implements TwoFactorAuthentication {
     public void logout() {
 
     }
+
+    public boolean handleTouch(String[] arguments, Command acc) {
+        if (this.md.freeSpace < 0.001) { return false; }
+        if (!acc.accepts(arguments.length)) { return false; }
+        Folder f = this.getCurrentDirectory();
+        File newFile = f.mainTouch(arguments[0], this.md);
+        Disk.assignNodes_File(md, newFile);
+        if (f.addToContents(newFile)) { return true; }
+        return false;
+    }
 }
 
 class Disk {
@@ -800,10 +905,14 @@ class Disk {
             size = 100;
         }
 
+        Memory diskHead = Memory.createChain(size);
+
+        Disk disk = new Disk(diskHead, size / 1000.0, fsm);
+
         // Set Up - First File
         System.out.println("You are now going to create your first file, the name and file extension is required such as \"testFile.txt\"");
         String name = proppedScanner.nextLine().trim();
-        File newFile = new File(name, null);
+        File newFile = new File(name, null, disk);
 
         // Write - To First File, conditional
         System.out.println(String.format("Would you like to write to %s? Enter y for yes or n for no", newFile.name));
@@ -832,15 +941,18 @@ class Disk {
             newFile.parent = fsm.root;
         }
 
-        Memory diskHead = Memory.createChain(size);
+        
 
-        Disk disk = new Disk(diskHead, size / 1000.0, fsm);
         // set firstFile to node
         assignNodes_File(disk, newFile);
-        disk.freeSpace -= newFile.size;
         System.out.println(newFile.size);
         System.out.println(String.format("Files: %s%nMax Size: %.5f%nFree Space: %.5f", disk.disk_head.filesSummary(), disk.maxSize, disk.freeSpace));
         return disk;
+    }
+
+    public boolean checkFileSize(String bodyOf) {
+        if (bodyOf.length() > 1_000_000 || (freeSpace - (bodyOf.length() / 1000) < 0)) { return false; }
+        return true;
     }
 
     public static void assignNodes_File(Disk toDisk, File file) {
@@ -852,19 +964,33 @@ class Disk {
         int count = 0;
         ArrayList<Memory> nodesToAssign = new ArrayList<>();
         Memory ph = toDisk.disk_head;
+
+        while (ph.size >= 1000) {
+            ph = ph.next;
+        }
+        
         while (count != maxNodes) {
             nodesToAssign.add(ph);
             ph = ph.next;
             count++;
         }
         String bodyOf = file.body;
+        
         int cI = 0;
         while (bodyOf.isEmpty() == false) {
-            bodyOf = nodesToAssign.get(cI).assignText(bodyOf);
+            bodyOf = nodesToAssign.get(cI).assignText(bodyOf, toDisk);
+            file.assignedNodes.add(nodesToAssign.get(cI));
             nodesToAssign.get(cI).files.add(file);
             cI++;
         }
-        
+    }
+
+    public void removeFiles(ArrayList<File> files) {
+        files.forEach(file -> {
+            file.assignedNodes.forEach((node) -> {
+                node.files.remove(file);
+            });
+        });
     }
 }
 
@@ -896,11 +1022,11 @@ class Memory {
 
     public String filesSummary() {
         StringBuilder sb = new StringBuilder();
-        files.forEach((file) -> sb.append(String.format("File(%s): %.5f", file.name, file.size)));
+        files.forEach((file) -> sb.append(String.format("File(%s): %.5f%n", file.name, file.size)));
         return sb.toString();
     }
 
-    public String assignText(String fileBody) {
+    public String assignText(String fileBody, Disk usingDisk) {
         // determine size of current text held in containingText
         // get substring that can fit in this file, return the remainder
 
@@ -912,7 +1038,7 @@ class Memory {
         int validSpace = sizeToAdd > fileBody.length() ? fileBody.length() : sizeToAdd;
         String toAdd = fileBody.substring(0, validSpace);
 
-        containingText.add(toAdd);
+        containingText.add(toAdd); usingDisk.freeSpace -= validSpace;
         String toReturn = fileBody.substring(validSpace);
         return toReturn;
     }
