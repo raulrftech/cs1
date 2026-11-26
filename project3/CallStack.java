@@ -57,7 +57,7 @@ public class CallStack {
     }
 
     public String describe() {
-        // builds the TOP -> ... -> null test, using get
+        // builds the TOP -> ... -> null test, using ll traversal, fuck O^2
         StringBuilder sb = new StringBuilder();
         StackFrame ph = this.head;
         sb.append("TOP -> ");
