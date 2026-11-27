@@ -57,8 +57,8 @@ public class ExecutionEngine {
 
             switch (split[0]) {
                 case "SET_OVERFLOW_POLICY":
-                    split[1] = split[1].trim();
-
+                    String policy = split[1].trim();
+                    trace.add(String.format("OVERFLOW POLICY: %s", policy));
                     
                     break;
                 case "SET_MAX_STACK_DEPTH":
