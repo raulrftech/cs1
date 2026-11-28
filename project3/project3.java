@@ -8,8 +8,8 @@ public class project3 {
         StackFrame sf2 = new StackFrame("add", new String[] { "5", "7" });
 
         ExecutionEngine ee = new ExecutionEngine(5);
-        ArrayList<String> sample = new ArrayList<>(Arrays.asList("                CALL   main(5, 7)", "CALL second", "CALL foo()"));
-        ee.execute(sample);
+        ArrayList<String> sample = new ArrayList<>(Arrays.asList("SET_OVERFLOW_POLICY STRICT", "CALL main", "CALL add(5, 7)", "PRINT_STACK", "RETURN 12", "PRINT_STACK", "RETURN", "    ", "#", ""));
+        System.out.println(ee.execute(sample));
 
     }
 }

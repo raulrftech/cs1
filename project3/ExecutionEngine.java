@@ -51,6 +51,7 @@ public class ExecutionEngine {
             // such as RETURN, CALL, PRINT_STACK
         for (int i = 0; i < instructions.size(); i++) {
             String s = instructions.get(i).trim();
+            if (s.isEmpty() || s.charAt(0) == '#') { continue; }
             s = s.replaceFirst(" ", "#");
             String[] split = s.split("#");
             //System.out.println(Arrays.toString(split));
@@ -68,18 +69,17 @@ public class ExecutionEngine {
                     String[] method = split[1].trim().split("[()]");
                     String methodName = method[0];
                     String[] methodArgs = method.length > 1 ? Arrays.copyOfRange(method, 1, method.length)[0].split("\\s*,\\s*") : new String[] {};
-                    
                     for (int j = 0; j < methodArgs.length; j++) { methodArgs[j] = methodArgs[j].trim(); }
-
                     StackFrame sf = new StackFrame(methodName, methodArgs);
                     stack.push(sf);
                     String toTrace = String.format("%s %s", split[0], sf.displayName());
                     trace.add(toTrace);
-
-                    System.out.println(String.format("%s%n%s -- Args Length: %d --- toTrace: [ %s ]", Arrays.toString(method), Arrays.toString(methodArgs), methodArgs.length, toTrace));
                     break;
                 case "RETURN":
-                    split[1] = split[1].trim();
+                    String returnVal = split.length > 1 ? split[1].trim() : "";
+                    String popped_displayName = stack.pop().displayName();
+                    String appending = String.format("%s %s %s", split[0], popped_displayName, returnVal.isEmpty() == false ? String.format("=> %s", returnVal) : "").trim();
+                    trace.add(appending);
                     break;
                 case "PRINT_STACK":
                     trace.add(stack.describe());
@@ -106,6 +106,6 @@ public class ExecutionEngine {
         //   the stack unchanged.
         // - In PURGE_OLDEST mode, remove the bottom frame before pushing onto a
         //   full stack. Log "STACK FULL: Purging oldest frame: <name>" before the CALL.
-        throw new UnsupportedOperationException("TODO: execute");
+        return trace;
     }
 }
